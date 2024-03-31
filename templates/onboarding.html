@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Healthcare Guardian Onboarding</title>
+  
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  
+  <style>
+    
+    .step-container {
+      display: none; 
+    }
+    .active-step {
+      display: block; 
+    }
+    .step-header {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .step-instruction {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .step-image {
+      margin-bottom: 20px;
+    }
+    .btn-previous, .btn-next {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <h2 class="text-center mb-4">Healthcare Guardian Onboarding</h2>
+        
+        <div id="step-1" class="step-container active-step">
+          <div class="step-header">Welcome to Healthcare Guardian!</div>
+          <div class="step-instruction">Follow the steps below to start tracking your health data:</div>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-2" class="step-container">
+          <div class="step-header">Step 1: Download Google Fit</div>
+          <div class="step-instruction">Download and install the Google Fit app from the App Store or Google Play Store.</div>
+          <div class="step-image">
+            <img src="https://via.placeholder.com/400" class="img-fluid" alt="Google Fit App">
+          </div>
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-3" class="step-container">
+          <div class="step-header">Step 2: Sign Up with Google Fit</div>
+          <div class="step-instruction">Open the Google Fit app and sign up or log in with your Google account.</div>
+          <div class="step-image">
+            <img src="https://via.placeholder.com/400" class="img-fluid" alt="Google Fit Signup/Login">
+          </div>
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-4" class="step-container">
+          <div class="step-header">Step 3: Allow Permissions for Google Fit</div>
+          <div class="step-instruction">Grant necessary permissions within the Google Fit app to sync your health data.</div>
+          <div class="step-image">
+            <img src="https://via.placeholder.com/400" class="img-fluid" alt="Google Fit Permissions">
+          </div>
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-5" class="step-container">
+          <div class="step-header">Step 4: Connect Apple Health Data</div>
+          <div class="step-instruction">Open the Apple Health app on your device and navigate to the data sharing settings.</div>
+          <div class="step-image">
+            <img src="https://via.placeholder.com/400" class="img-fluid" alt="Apple Health App">
+          </div>
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-6" class="step-container">
+          <div class="step-header">Step 5: Login to Healthcare Guardian</div>
+          <div class="step-instruction">Log in to Healthcare Guardian using your Google account and grant permissions to access your health data.</div>
+          <div class="step-image">
+            <img src="https://via.placeholder.com/400" class="img-fluid" alt="Healthcare Guardian Login">
+          </div>
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="location.href='signup.html';">Next</button>
+        </div>
+        
+        <div id="step-7" class="step-container">
+          <div class="step-header">Congratulations!</div>
+          <div class="step-instruction">You have successfully completed the onboarding process.</div>
+          <button class="btn btn-success btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary" onclick="completeOnboarding()">Start Exploring</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  
+  <script>
+    var currentStep = 1;
+    function nextStep() {
+      document.getElementById('step-' + currentStep).classList.remove('active-step');
+      currentStep++;
+      if (currentStep <= 7) {
+        document.getElementById('step-' + currentStep).classList.add('active-step');
+      } else {
+        completeOnboarding();
+      }
+    }
+    function previousStep() {
+      document.getElementById('step-' + currentStep).classList.remove('active-step');
+      currentStep--;
+      document.getElementById('step-' + currentStep).classList.add('active-step');
+    }
+    function completeOnboarding() {
+      alert('Congratulations! You have successfully completed the onboarding process.');
+      
+    }
+  </script>
+</body>
+</html>
