@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency Contacts | Healthcare Guardian</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    /* Add custom styles here */
+    .emergency-contacts-container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      margin-top: 100px;
+    }
+    .emergency-contacts-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .contact-list {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="emergency-contacts-container">
+          <h2 class="emergency-contacts-header">Emergency Contacts</h2>
+          <!-- Add emergency contact form -->
+          <form id="emergencyContactForm">
+            <div class="form-group">
+              <label for="name">Name:</label>
+              <input type="text" class="form-control" id="name" placeholder="Enter name">
+            </div>
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" class="form-control" id="email" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone:</label>
+              <input type="tel" class="form-control" id="phone" placeholder="Enter phone number">
+            </div>
+            <button type="submit" class="btn btn-primary">Add Contact</button>
+          </form>
+          <!-- Display added emergency contacts -->
+          <div class="contact-list">
+            <h3>Emergency Contacts List:</h3>
+            <ul id="emergencyContactsList">
+              <!-- Emergency contacts will be dynamically added here -->
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script>
+    // Function to handle form submission
+    document.getElementById('emergencyContactForm').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent form submission
+      
+      // Get form values
+      var name = document.getElementById('name').value;
+      var email = document.getElementById('email').value;
+      var phone = document.getElementById('phone').value;
+      
+      // Validate form fields (you can add your validation logic here)
+
+      // Add the contact to the list
+      addEmergencyContact(name, email, phone);
+
+      // Reset form fields
+      document.getElementById('name').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('phone').value = '';
+    });
+
+    // Function to add emergency contact to the list
+    function addEmergencyContact(name, email, phone) {
+      var contactsList = document.getElementById('emergencyContactsList');
+      var contactItem = document.createElement('li');
+      contactItem.textContent = name + ' - Email: ' + email + ', Phone: ' + phone;
+      contactsList.appendChild(contactItem);
+    }
+  </script>
+</body>
+</html>
