@@ -19,10 +19,10 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav ml-auto">
         <li class="nav-item">
-          <a class="nav-link" href="#signup">Sign Up</a>
+          <a class="nav-link" href="{{ url_for('signup') }}">Sign Up</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#login">Login</a>
+          <a class="nav-link" href="{{ url_for('login') }}">Login</a>
         </li>
       </ul>
     </div>
@@ -33,9 +33,9 @@
       <h1 class="display-4">Welcome to Real Time Healthcare Guardian</h1>
       <p class="lead">Your health and fitness tracking companion.</p>
       <hr class="my-4">
-      <p>Signup to set up your account and start tracking your health heart rate.</p>
+      <p>Signup to get onboard your account and start tracking your health heart rate daily and send emergency alerts to your families</p>
       <p class="lead">
-        <a class="btn btn-primary btn-lg" href="#signup" role="button">Sign Up</a>
+        <a class="btn btn-primary btn-lg" href="{{ url_for('onboarding') }}" role="button">Get onboard</a>
       </p>
     </div>
   </div>
@@ -47,7 +47,9 @@
         <div class="col-md-8 mx-auto text-center">
           <h2>Signup to Setup Your Account</h2>
           <p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-          <a class="btn btn-primary btn-lg" href="#signup" role="button">Sign Up</a>
+          <a class="btn btn-primary btn-lg" href="{{ url_for('onboarding') }}" role="button">Get onboard</a>
+          <p class="lead">Already onboard? Signup to setup your account.</p>
+          <a class="btn btn-primary btn-lg" href="{{ url_for('signup') }}" role="button">Sign Up</a>
         </div>
       </div>
     </div>
@@ -60,7 +62,7 @@
         <div class="col-md-8 mx-auto text-center">
           <h2>Login to My Healthcare Dashboard</h2>
           <p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-          <a class="btn btn-primary btn-lg" href="#login" role="button">Login</a>
+          <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}" role="button">Login</a>
         </div>
       </div>
     </div>
