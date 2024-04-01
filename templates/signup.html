@@ -14,36 +14,53 @@
     <div class="row justify-content-center">
       <div class="col-md-6">
         <h2 class="text-center mb-4">Signup to Health Guardian</h2>
-        <form id="signupForm" method="POST">
+        <form method="POST" action="{{ url_for('signup') }}">
           <div class="form-group">
-            <label for="firstName">First Name</label>
-            <input type="text" class="form-control" id="firstName" placeholder="Enter your first name" required>
-          </div>
-          <div class="form-group">
-            <label for="lastName">Last Name</label>
-            <input type="text" class="form-control" id="lastName" placeholder="Enter your last name" required>
-          </div>
-          <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" class="form-control" id="email" placeholder="Enter your email address" required>
-          </div>
-          <div class="form-group">
-            <label for="mobile">Mobile Number</label>
-            <div class="input-group">
-              <div class="input-group-prepend">
-                <span class="input-group-text">+<input type="text" id="countryCode" class="form-control" style="width: 50px;"></span>
-              </div>
-              <input type="tel" class="form-control" id="mobile" placeholder="Enter your mobile number" required>
+            {{ form.csrf_token }}
+            <div class="form-group">
+                {{ form.firstName.label }}
+                {{ form.firstName(class="form-control", placeholder="Enter your first name") }}
+
+                {% if form.firstName.errors %}
+                <div class="invalid-feedback">{{ form.firstName.errors[0] }}</div>
+                {% endif %}
+
+                {{ form.lastName.label }}
+                {{ form.lastName(class="form-control", placeholder="Enter your last name") }}
+
+                {% if form.lastName.errors %}
+                <div class="invalid-feedback">{{ form.lastName.errors[0] }}</div>
+                {% endif %}
+
+                {{ form.email.label }}
+                {{ form.email(class="form-control", placeholder="Enter your Email id") }}
+                
+                {% if form.email.errors %}
+                    <div class="invalid-feedback">{{ form.email.errors[0] }}</div>
+                {% endif %}                
+
+                {{ form.mobile.label }}
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                      <span class="input-group-text">+{{ form.countryCode(class="form-control", placeholder="", style="width: 50px") }}</span>
+                  </div>
+                  {{ form.mobile(class="form-control", placeholder="Enter your mobile number") }}
+                </div>
+
+                {% if form.countryCode.errors %}
+                  <div class="invalid-feedback">{{ form.countryCode.errors[0] }}</div>
+                {% endif %}
+
+                {% if form.mobile.errors %}
+                  <div class="invalid-feedback">{{ form.mobile.errors[0] }}</div>
+                {% endif %}
+
+                {{ form.password.label }}
+                {{ form.password(class="form-control", placeholder="Enter password") }}
+                {{ form.confirmPassword.label }}
+                {{ form.confirmPassword(class="form-control", placeholder="Confirm password") }}
+
             </div>
-          </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
-          </div>
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm your password" required>
-          </div>
           <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
         </form>
         <p class="text-center mt-3">Or</p>
@@ -57,24 +74,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   
-  <script>
-    document.getElementById('signupForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-      var countryCode = document.getElementById('countryCode').value.trim();
-      var mobileNumber = document.getElementById('mobile').value.trim();
-      
-      if (!countryCode) {
-        alert('Please enter country code for your mobile number.');
-        return;
-      }
-      
-      if (!mobileNumber) {
-        alert('Please enter your mobile number.');
-        return;
-      }
-      alert('Form submitted successfully.');
-      window.location.href = "/signup";
-    });
-  </script>
+  <script></script>
 </body>
 </html>
