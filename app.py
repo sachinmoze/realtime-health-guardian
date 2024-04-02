@@ -140,9 +140,35 @@ def onboarding():
 def login():
 
     if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+       
+        if not User.user_exists(email):
+            flash('Email id does not exist. Please sign up.', 'danger')
+            return redirect(url_for('login'))
 
+        user = User.get(User.email == email)
+        
+        if check_password_hash(user.password, password):
+            login_user(user)
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Password is incorrect. Please try again.', 'danger')
+            return redirect(url_for('login'))
 
     return render_template('login.html')
+
+@app.route('/forgotpassword')
+def forgotpassword():
+    return render_template('forgotpassword.html')
+
+
+@login_required
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
+
 
 def initialize():
     DATABASE.connect()
