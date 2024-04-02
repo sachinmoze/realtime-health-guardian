@@ -3,7 +3,7 @@ from flask_mysqldb import MySQL
 from flask_cors import CORS
 import json
 import sqlite3
-from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
+from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin,current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
@@ -163,9 +163,16 @@ def login():
 def forgotpassword():
     return render_template('forgotpassword.html')
 
+@app.route('/logout')
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('home'))    
 
-@login_required
+
+
 @app.route('/dashboard')
+@login_required
 def dashboard():
     return render_template('dashboard.html')
 
