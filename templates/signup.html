@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signup | Healthcare Guardian</title>
+  {% extends 'base.html' %}
+
+  {% block title %}Signup | Healthcare Guardian{% endblock %}
   
-  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  
-  <style></style>
-</head>
-<body>
+  {% block content %}
+
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-md-6">
@@ -33,11 +27,12 @@
                 {% endif %}
 
                 {{ form.email.label }}
+                {% if form.email.errors %}
+                <div class="invalid-feedback">{{ form.email.errors[0] }}</div>
+              {% endif %}    
                 {{ form.email(class="form-control", placeholder="Enter your Email id") }}
                 
-                {% if form.email.errors %}
-                    <div class="invalid-feedback">{{ form.email.errors[0] }}</div>
-                {% endif %}                
+            
 
                 {{ form.mobile.label }}
                 <div class="input-group">
@@ -57,8 +52,30 @@
 
                 {{ form.password.label }}
                 {{ form.password(class="form-control", placeholder="Enter password") }}
+
+                {% if form.password.errors %}
+                <div class="content">
+                  {% for error in form.password.errors %}
+                    <div class="alert">{{ error }}</div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+
                 {{ form.confirmPassword.label }}
                 {{ form.confirmPassword(class="form-control", placeholder="Confirm password") }}
+                {% if form.confirmPassword.errors %}
+                <div class="content">{{ form.confirmPassword.errors[0] }}</div>
+                {% endif %}
+                {% if form.confirmPassword.errors %}
+                <div class="content">
+                  {% for error in form.confirmPassword.errors %}
+                    <div class="alert">{{ error }}</div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+
+
+
 
             </div>
           <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
@@ -69,11 +86,4 @@
     </div>
   </div>
 
-  
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  
-  <script></script>
-</body>
-</html>
+  {% endblock %}

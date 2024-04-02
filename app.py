@@ -21,6 +21,9 @@ app.config['MYSQL_DB'] = 'your_database'
 
 mysql = MySQL(app)
 
+#from peewee import *
+#DATABASE = SqliteDatabase("social.db")
+
 login_manager = LoginManager(app)
 
 conn = sqlite3.connect('health.db')
@@ -65,7 +68,8 @@ def home():
 def signup():
     form = SignupForm()
 
-    if form.validate_on_submit():
+    if request.method == 'POST' and form.validate_on_submit():
+        print('Form validated')
         # Process form data (e.g., save to database)
         firstname = request.form['firstName']
         lastname = request.form['lastName']
@@ -73,7 +77,6 @@ def signup():
         countryCode = request.form['countryCode']
         mobile = request.form['mobile']
         password = request.form['password']
-        
         hashed_password = generate_password_hash(password)
         
         conn = sqlite3.connect('health.db')
@@ -81,7 +84,7 @@ def signup():
         # cursor.execute("INSERT INTO users (firstname, lastname, email, mobilenumber, password) VALUES (%s, %s, %s, %s, %s)",
         #             (firstname, lastname, email, countryCode + mobile, hashed_password))
         cursor.execute("INSERT INTO users (firstname, lastname, email, mobilenumber, password) VALUES (?, ?, ?, ?, ?)",
-                       (firstname, lastname, email, mobile, hashed_password))
+                       (firstname, lastname, email, countryCode+mobile, hashed_password))
         
 
         conn.commit()
