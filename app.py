@@ -10,6 +10,11 @@ from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
 
 from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist
+from flask_mail import Mail, Message
+
+import os
+from dotenv import load_dotenv, dotenv_values 
+load_dotenv() 
 
 app = Flask(__name__)
 
@@ -19,9 +24,17 @@ app.config['MYSQL_USER'] = 'bablumoze'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'your_database'
 
+app.config['MAIL_SERVER']='sandbox.smtp.mailtrap.io'
+app.config['MAIL_PORT'] = 2525
+app.config['MAIL_USERNAME'] = 'c229b50b767443'
+app.config['MAIL_PASSWORD'] = ''
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+
 #mongodb+srv://bablumoze:<password>@cluster0.oq3mqne.mongodb.net/
 
 mysql = MySQL(app)
+mail = Mail(app)
 
 
 login_manager = LoginManager(app)
@@ -159,6 +172,20 @@ def login():
 
     return render_template('login.html')
 
+
+# @app.route('/resetpassword', methods=['GET', 'POST'])
+# def resetpassword():
+#     if request.method == 'POST':
+#         email = request.form.get('email')
+#         if not User.user_exists(email):
+#             flash('Email id does not exist. Please sign up.', 'danger')
+#             return redirect(url_for('signup'))
+#         else:
+#             flash('Password reset link sent to your email, Follow the link to reset password', 'warning')
+#             return redirect(url_for('login'))
+#     return render_template('resetpassword.html')
+
+
 @app.route('/forgotpassword', methods=['GET', 'POST'])
 def forgotpassword():
     if request.method == 'POST':
@@ -184,6 +211,12 @@ def logout():
 def dashboard():
     return render_template('dashboard.html')
 
+@app.route('/mail-test')
+def mail_test():
+    msg = Message(subject='Hello from flask app!', sender='healthguardian@mailtrap.io', recipients=['sachinmoze@gmail.com'])
+    msg.body = "Hey Sachin, sending you this email from my Flask app, lmk if it works"
+    mail.send(msg)
+    return "Message sent!"
 
 def initialize():
     DATABASE.connect()
