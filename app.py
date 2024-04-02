@@ -28,12 +28,19 @@ app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
 mysql = MySQL(app)
 
 ## Mail configurations
-app.config['MAIL_SERVER']= os.getenv('MAIL_SERVER')
-app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS')
-app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL')
+# app.config['MAIL_SERVER']= os.getenv('MAIL_SERVER')
+# app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
+# app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+# app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+# app.config['MAIL_USE_TLS'] = bool(os.getenv('MAIL_USE_TLS'))
+# app.config['MAIL_USE_SSL'] = bool(os.getenv('MAIL_USE_SSL'))
+app.config['MAIL_SERVER']='sandbox.smtp.mailtrap.io'
+app.config['MAIL_PORT'] = 2525
+app.config['MAIL_USERNAME'] = '3f6a064b5dc9ab'
+app.config['MAIL_PASSWORD'] = 'a1e1e3d45bd954'
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+
 mail = Mail(app)
 
 #mongodb+srv://bablumoze:<password>@cluster0.oq3mqne.mongodb.net/
