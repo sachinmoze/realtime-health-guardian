@@ -167,7 +167,7 @@ def forgotpassword():
             flash('Email id does not exist. Please sign up.', 'danger')
             return redirect(url_for('signup'))
         else:
-            flash('Password reset link sent to your email, Follow the link to reset password', 'info')
+            flash('Password reset link sent to your email, Follow the link to reset password', 'warning')
             return redirect(url_for('login'))
     return render_template('forgotpassword.html')
 
