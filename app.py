@@ -18,23 +18,25 @@ load_dotenv()
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-app.config['MYSQL_HOST'] = ''
-app.config['MYSQL_USER'] = 'bablumoze'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'your_database'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-app.config['MAIL_SERVER']='sandbox.smtp.mailtrap.io'
-app.config['MAIL_PORT'] = 2525
-app.config['MAIL_USERNAME'] = 'c229b50b767443'
-app.config['MAIL_PASSWORD'] = ''
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
+## Database configurations
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
+mysql = MySQL(app)
+
+## Mail configurations
+app.config['MAIL_SERVER']= os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS')
+app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL')
+mail = Mail(app)
 
 #mongodb+srv://bablumoze:<password>@cluster0.oq3mqne.mongodb.net/
-
-mysql = MySQL(app)
-mail = Mail(app)
 
 
 login_manager = LoginManager(app)
