@@ -120,6 +120,9 @@ def home():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
     form = SignupForm()
 
     if request.method == 'POST' and form.validate_on_submit():
