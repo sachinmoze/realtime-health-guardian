@@ -230,7 +230,7 @@ def dashboard():
 
 @app.route('/mail-test')
 def mail_test():
-    msg = Message(subject='Hello from flask app!', sender='healthguardian@mailtrap.io', recipients=['sachinmoze@gmail.com'])
+    msg = Message(subject='Hello from flask app!', sender='healthguardian@mailtrap.io', recipients=['sachinmoze@gmail.com','sachin.moze@gmail.com'])
     msg.body = "Hey Sachin, sending you this email from my Flask app, just checking if it works"
     mail.send(msg)
     return "Message sent!"
