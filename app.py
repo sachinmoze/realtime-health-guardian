@@ -213,7 +213,15 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))    
 
+@app.route('/health-metrics')
+@login_required
+def health_metrics():
+    return render_template('health-metrics.html')
 
+@app.route('/emergency-contacts')
+@login_required
+def emergency_contacts():
+    return render_template('emergency-form.html')
 
 @app.route('/dashboard')
 @login_required
@@ -223,7 +231,7 @@ def dashboard():
 @app.route('/mail-test')
 def mail_test():
     msg = Message(subject='Hello from flask app!', sender='healthguardian@mailtrap.io', recipients=['sachinmoze@gmail.com'])
-    msg.body = "Hey Sachin, sending you this email from my Flask app, lmk if it works"
+    msg.body = "Hey Sachin, sending you this email from my Flask app, just checking if it works"
     mail.send(msg)
     return "Message sent!"
 

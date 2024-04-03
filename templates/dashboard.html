@@ -43,7 +43,7 @@
               <h5 class="card-title">Health Stats</h5>
               <p class="card-text">View your health statistics here.</p>
               <!-- Add an ID to the link for event handling -->
-              <a href="#" id="healthStatsLink" class="btn btn-primary">View Stats</a>
+              <a href="{{ url_for('health_metrics') }}" id="healthStatsLink" class="btn btn-primary">View Stats</a>
             </div>
           </div>
           <div class="card">
@@ -58,7 +58,7 @@
             <div class="card-body">
               <h5 class="card-title">Emergency Contacts</h5>
               <p class="card-text">Manage your emergency contacts.</p>
-              <a href="#" class="btn btn-primary">Manage Contacts</a>
+              <a href="{{ url_for('emergency_contacts') }}" class="btn btn-primary">Manage Contacts</a>
             </div>
           </div>
         </div>
