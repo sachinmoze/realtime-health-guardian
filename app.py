@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 import json
@@ -241,6 +241,10 @@ def mail_test():
     msg.body = "Hey Sachin, sending you this email from my Flask app, just checking if it works"
     mail.send(msg)
     return "Message sent!"
+
+@property
+def is_authenticated_google(self):
+    return session.get('is_authenticated_google', False)
 
 def initialize():
     DATABASE.connect()
