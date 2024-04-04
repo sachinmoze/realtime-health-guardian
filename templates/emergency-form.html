@@ -3,7 +3,7 @@
  
 {% block styles %}
   <style>
-    /* Add custom styles here */
+    
     .emergency-contacts-container {
       max-width: 800px;
       margin: auto;
@@ -27,21 +27,23 @@
         <div class="emergency-contacts-container">
           <h2 class="emergency-contacts-header">Emergency Contacts</h2>
           <!-- Add emergency contact form -->
+
           <form id="emergencyContactForm">
             <div class="form-group">
               <label for="name">Name:</label>
-              <input type="text" class="form-control" id="name" placeholder="Enter name">
+              <input type="text" class="form-control" id="name" name="name" placeholder="Enter name">
             </div>
             <div class="form-group">
               <label for="email">Email:</label>
-              <input type="email" class="form-control" id="email" placeholder="Enter email">
+              <input type="email" class="form-control" id="email" name="email" placeholder="Enter email">
             </div>
             <div class="form-group">
               <label for="phone">Phone:</label>
-              <input type="tel" class="form-control" id="phone" placeholder="Enter phone number">
+              <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter phone number">
             </div>
             <button type="submit" class="btn btn-primary">Add Contact</button>
           </form>
+
           <!-- Display added emergency contacts -->
           <div class="contact-list">
             <h3>Emergency Contacts List:</h3>
