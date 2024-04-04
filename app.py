@@ -244,7 +244,7 @@ def mail_test():
 
 @property
 def is_authenticated_google(self):
-    return session.get('is_authenticated_google', False)
+    return session.get('is_authenticated_google_fit', False)
 
 def initialize():
     DATABASE.connect()
