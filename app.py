@@ -109,6 +109,9 @@ class User(UserMixin,Model):
             return user
         except Exception as e:
             raise Exception("Error creating user",e)
+    @property
+    def is_authenticated_google_fit(self):
+        return False
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -233,6 +236,7 @@ def emergency_contacts():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    print(current_user.is_authenticated_google_fit)
     return render_template('dashboard.html')
 
 @app.route('/mail-test')
@@ -242,9 +246,9 @@ def mail_test():
     mail.send(msg)
     return "Message sent!"
 
-@property
-def is_authenticated_google(self):
-    return session.get('is_authenticated_google_fit', False)
+# @property
+# def is_authenticated_google(self):
+#     return session.get('is_authenticated_google_fit', False)
 
 def initialize():
     DATABASE.connect()

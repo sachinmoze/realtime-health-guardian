@@ -26,17 +26,13 @@
         <div class="dashboard-container">
           <h2 class="dashboard-header">Welcome to Healthcare Guardian Dashboard</h2>
           <!-- Check if the user has authenticated with Google Fit -->
-          <?php
-            // Assume $userAuthenticated is a variable indicating whether the user has authenticated with Google Fit
-            $userAuthenticated = true; // Example variable, replace with your actual logic
-            if (!$userAuthenticated) {
-          ?>
+          {% if not current_user.is_authenticated_google_fit %}
           <!-- If user has not authenticated, show alert message -->
           <div class="alert alert-warning" role="alert">
             You need to authenticate to your Google Fit account to access the full dashboard features.
             <a href="#" class="alert-link">Authenticate now</a>.
           </div>
-          <?php } ?>
+          {% endif %}
           <!-- Regular dashboard content -->
           <div class="card">
             <div class="card-body">
