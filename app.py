@@ -82,6 +82,7 @@ DATABASE = SqliteDatabase("health1.db")
 
 
 
+
 class User(UserMixin,Model):
     #id = IntegerField(primary_key=True)
     firstname = CharField(max_length=50)
@@ -116,23 +117,33 @@ class User(UserMixin,Model):
             return user
         except Exception as e:
             raise Exception("Error creating user",e)
-    
-    def get_credentials(self):
-        # Assuming you have a one-to-one relationship between User and UserCredentials
-        # Replace 'UserCredentials' with the name of your UserCredentials model
-        try:
-            return self.user_google_fit_credentials
-        except UserGoogleFitCredentials.DoesNotExist:
-            return None
+        
+    # credentials = ForeignKeyField(UserGoogleFitCredentials, backref='user', ondelete=models.CASCADE, null=True)
+    # def get_credentials(self):
+    #     try:
+    #         return self.user_google_fit_credentials
+    #     except UserGoogleFitCredentials.DoesNotExist:
+    #         return None        
+    # credentials = ForeignKeyField('UserGoogleFitCredentials', backref='user', null=True)
+    # def get_credentials(self):
+    #     try:
+    #         return self.credentials
+    #     except UserGoogleFitCredentials.DoesNotExist:
+    #         return None
 
 class UserGoogleFitCredentials(Model):
+    __tablename__ = 'user_google_fit_credentials'
     token = CharField()
     refresh_token = CharField()
     token_uri = CharField()
     client_id = CharField()
     client_secret = CharField()
     scopes = CharField()
-    user = ForeignKeyField(User, backref='user_google_fit_credentials')
+    user = ForeignKeyField(User, 
+                           backref='user_google_fit_credentials', 
+                           to_field="id", 
+                           #related_name="users"
+                           )
     class Meta:
         database = DATABASE
 
@@ -290,6 +301,26 @@ def google_fit():
             pass  
         return redirect(url_for('dashboard'))
 
+@app.route('/google-fit-remove')
+def google_fit_remove():
+    if current_user.is_authenticated:
+        
+        #current_user.is_authenticated_google_fit = True
+        #login_user(current_user)
+        print(current_user)
+        #user_id = current_user.user_id
+        print(current_user.authenticated_google_fit)
+        try:
+            user = User.get(User.id == current_user.get_id())
+            user.authenticated_google_fit = False
+            user.save()
+            load_user(user.id)
+            print(current_user.authenticated_google_fit)
+            return redirect(url_for('dashboard'))
+        except DoesNotExist:
+            # Handle the case where the user ID is not found in the database
+            pass  
+        return redirect(url_for('dashboard'))
 
 # @property
 # def is_authenticated_google(self):
@@ -297,7 +328,7 @@ def google_fit():
 
 def initialize():
     DATABASE.connect()
-    DATABASE.create_tables([User], safe=True)
+    DATABASE.create_tables([User,UserGoogleFitCredentials], safe=True)
     DATABASE.close()
 
 if __name__ == '__main__':

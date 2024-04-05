@@ -27,7 +27,7 @@
 
           <h2 class="dashboard-header">Hi {{ current_user.firstname }}, Welcome back to Healthcare Guardian Dashboard</h2>
           <!-- Check if the user has authenticated with Google Fit -->
-          {{current_user.authenticated_google_fit}}
+          
           {% if not current_user.authenticated_google_fit %}
           <!-- If user has not authenticated, show alert message -->
           <div class="alert alert-warning" role="alert">
