@@ -80,6 +80,8 @@ class SignupForm(FlaskForm):
 
 DATABASE = SqliteDatabase("health1.db")
 
+
+
 class User(UserMixin,Model):
     #id = IntegerField(primary_key=True)
     firstname = CharField(max_length=50)
@@ -88,10 +90,6 @@ class User(UserMixin,Model):
     mobilenumber = CharField(max_length=15)
     password = CharField(max_length=100)
     authenticated_google_fit = BooleanField(default=False)
-
-    # def update_authentication_google_fit(self, value):
-    #     self.authenticated_google_fit = value
-    #     self.save()
 
     class Meta:
         database = DATABASE
@@ -118,14 +116,23 @@ class User(UserMixin,Model):
             return user
         except Exception as e:
             raise Exception("Error creating user",e)
+    
+    def get_credentials(self):
+        # Assuming you have a one-to-one relationship between User and UserCredentials
+        # Replace 'UserCredentials' with the name of your UserCredentials model
+        try:
+            return self.user_google_fit_credentials
+        except UserGoogleFitCredentials.DoesNotExist:
+            return None
 
-class UserCredentials(Model):
-    user = ForeignKeyField(User, backref='credentials')
-    access_token = CharField(max_length=100)
-    refresh_token = CharField(max_length=100)
-
-    # Add more fields as needed
-
+class UserGoogleFitCredentials(Model):
+    token = CharField()
+    refresh_token = CharField()
+    token_uri = CharField()
+    client_id = CharField()
+    client_secret = CharField()
+    scopes = CharField()
+    user = ForeignKeyField(User, backref='user_google_fit_credentials')
     class Meta:
         database = DATABASE
 
