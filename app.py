@@ -9,7 +9,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
 
-from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist,BooleanField
+from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist,BooleanField,ForeignKeyField
 from flask_mail import Mail, Message
 
 import os
@@ -78,7 +78,7 @@ class SignupForm(FlaskForm):
     confirmPassword = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
 
 
-DATABASE = SqliteDatabase("health2.db")
+DATABASE = SqliteDatabase("health1.db")
 
 class User(UserMixin,Model):
     #id = IntegerField(primary_key=True)
@@ -119,17 +119,15 @@ class User(UserMixin,Model):
         except Exception as e:
             raise Exception("Error creating user",e)
 
-    ##Write a code to store is_authenticated_google_fit logic and once user logged in with their google account, set this flag to True
-    # @property
-    # def is_authenticated_google_fit(self):
-    #     return self.is_authenticated_google
+class UserCredentials(Model):
+    user = ForeignKeyField(User, backref='credentials')
+    access_token = CharField(max_length=100)
+    refresh_token = CharField(max_length=100)
 
-    
-        
-        
-    # @property
-    # def is_authenticated_google_fit(self):
-    #     return False
+    # Add more fields as needed
+
+    class Meta:
+        database = DATABASE
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -275,9 +273,8 @@ def google_fit():
         print(current_user.authenticated_google_fit)
         try:
             user = User.get(User.id == current_user.get_id())
-            user.update_authentication_google_fit(True)
+            user.authenticated_google_fit = True
             user.save()
-            login_user(user)
             load_user(user.id)
             print(current_user.authenticated_google_fit)
             return redirect(url_for('dashboard'))
