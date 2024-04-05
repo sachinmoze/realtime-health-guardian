@@ -24,9 +24,11 @@
     <div class="row">
       <div class="col-md-12">
         <div class="dashboard-container">
-          <h2 class="dashboard-header">Welcome to Healthcare Guardian Dashboard</h2>
+
+          <h2 class="dashboard-header">Hi {{ current_user.firstname }}, Welcome back to Healthcare Guardian Dashboard</h2>
           <!-- Check if the user has authenticated with Google Fit -->
-          {% if not current_user.is_authenticated_google_fit %}
+          {{current_user.authenticated_google_fit}}
+          {% if not current_user.authenticated_google_fit %}
           <!-- If user has not authenticated, show alert message -->
           <div class="alert alert-warning" role="alert">
             You need to authenticate to your Google Fit account to access the full dashboard features.

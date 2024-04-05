@@ -9,14 +9,18 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
 
-from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist
+from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist,BooleanField
 from flask_mail import Mail, Message
 
 import os
 from dotenv import load_dotenv, dotenv_values 
 load_dotenv() 
 
+login_manager = LoginManager()
+
 app = Flask(__name__)
+
+login_manager.init_app(app)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
@@ -47,7 +51,7 @@ mail = Mail(app)
 #mongodb+srv://bablumoze:<password>@cluster0.oq3mqne.mongodb.net/
 
 
-login_manager = LoginManager(app)
+
 
 # conn = sqlite3.connect('health.db')
 # cursor = conn.cursor()
@@ -74,15 +78,20 @@ class SignupForm(FlaskForm):
     confirmPassword = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
 
 
-DATABASE = SqliteDatabase("health1.db")
+DATABASE = SqliteDatabase("health2.db")
 
 class User(UserMixin,Model):
-    id = IntegerField(primary_key=True)
+    #id = IntegerField(primary_key=True)
     firstname = CharField(max_length=50)
     lastname = CharField(max_length=50)
     email = CharField(max_length=100, unique=True)
     mobilenumber = CharField(max_length=15)
     password = CharField(max_length=100)
+    authenticated_google_fit = BooleanField(default=False)
+
+    # def update_authentication_google_fit(self, value):
+    #     self.authenticated_google_fit = value
+    #     self.save()
 
     class Meta:
         database = DATABASE
@@ -109,13 +118,22 @@ class User(UserMixin,Model):
             return user
         except Exception as e:
             raise Exception("Error creating user",e)
-    @property
-    def is_authenticated_google_fit(self):
-        return False
+
+    ##Write a code to store is_authenticated_google_fit logic and once user logged in with their google account, set this flag to True
+    # @property
+    # def is_authenticated_google_fit(self):
+    #     return self.is_authenticated_google
+
+    
+        
+        
+    # @property
+    # def is_authenticated_google_fit(self):
+    #     return False
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User(user_id)
+    return User.get(user_id)
 
 @app.route('/')
 def home():
@@ -236,7 +254,7 @@ def emergency_contacts():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    print(current_user.is_authenticated_google_fit)
+    print("in dashboard",current_user.authenticated_google_fit)
     return render_template('dashboard.html')
 
 @app.route('/mail-test')
@@ -245,6 +263,29 @@ def mail_test():
     msg.body = "Hey Sachin, sending you this email from my Flask app, just checking if it works"
     mail.send(msg)
     return "Message sent!"
+
+@app.route('/google-fit')
+def google_fit():
+    if current_user.is_authenticated:
+        
+        #current_user.is_authenticated_google_fit = True
+        #login_user(current_user)
+        print(current_user)
+        #user_id = current_user.user_id
+        print(current_user.authenticated_google_fit)
+        try:
+            user = User.get(User.id == current_user.get_id())
+            user.update_authentication_google_fit(True)
+            user.save()
+            login_user(user)
+            load_user(user.id)
+            print(current_user.authenticated_google_fit)
+            return redirect(url_for('dashboard'))
+        except DoesNotExist:
+            # Handle the case where the user ID is not found in the database
+            pass  
+        return redirect(url_for('dashboard'))
+
 
 # @property
 # def is_authenticated_google(self):
