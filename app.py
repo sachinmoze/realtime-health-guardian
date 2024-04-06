@@ -21,6 +21,11 @@ import google_auth_oauthlib.flow
 import googleapiclient.discovery
 from googleapiclient.discovery import build
 import requests
+
+from celery import Celery
+import celery_config
+import redis
+
 CLIENT_SECRETS_FILE = "credentials.json"
 
 SCOPES = [
@@ -34,11 +39,19 @@ API_VERSION = 'v1'
 
 login_manager = LoginManager()
 
+
+
 app = Flask(__name__)
 
 login_manager.init_app(app)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+## Celery declarations
+# app.config.from_object(celery_config)
+# celery = Celery(app.name)
+# celery.config_from_object(celery_config)
+celery = Celery(app.name, broker='redis://localhost:6379/0')
 
 ## Database configurations
 app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
