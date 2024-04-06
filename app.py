@@ -9,7 +9,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
 
-from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist,BooleanField,ForeignKeyField
+from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist,BooleanField,ForeignKeyField,DateTimeField,FloatField
 from flask_mail import Mail, Message
 
 import os
@@ -144,6 +144,21 @@ class UserGoogleFitCredentials(Model):
                            to_field="id", 
                            #related_name="users"
                            )
+    class Meta:
+        database = DATABASE
+
+class HealthMetrics(Model):
+    user = ForeignKeyField(User, 
+                           to_field="id",
+                           backref='health_metrics')
+    heart_rate = FloatField()
+    latitude = FloatField(null=True)
+    longitude = FloatField(null=True)
+    distance = FloatField(null=True)
+    starttime = DateTimeField()
+    endtime = DateTimeField()
+    modifiedtime = DateTimeField()
+
     class Meta:
         database = DATABASE
 
