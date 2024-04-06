@@ -31,15 +31,15 @@
           <form id="emergencyContactForm">
             <div class="form-group">
               <label for="name">Name:</label>
-              <input type="text" class="form-control" id="name" name="name" placeholder="Enter name">
+              <input type="text" class="form-control" id="name" name="name" placeholder="Enter name" required>
             </div>
             <div class="form-group">
               <label for="email">Email:</label>
-              <input type="email" class="form-control" id="email" name="email" placeholder="Enter email">
+              <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
             </div>
             <div class="form-group">
               <label for="phone">Phone:</label>
-              <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter phone number">
+              <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter phone number" required>
             </div>
             <button type="submit" class="btn btn-primary">Add Contact</button>
           </form>
@@ -48,6 +48,9 @@
           <div class="contact-list">
             <h3>Emergency Contacts List:</h3>
             <ul id="emergencyContactsList">
+              {% for contact in emergency_contacts %}
+              <li>{{ contact.name }} - Email: {{ contact.email }}, Phone: {{ contact.phone }}</li>
+              {% endfor %}
               <!-- Emergency contacts will be dynamically added here -->
             </ul>
           </div>
@@ -57,32 +60,51 @@
   </div>
 
   <script>
-    // Function to handle form submission
-    document.getElementById('emergencyContactForm').addEventListener('submit', function(event) {
-      event.preventDefault(); // Prevent form submission
-      
-      // Get form values
-      var name = document.getElementById('name').value;
-      var email = document.getElementById('email').value;
-      var phone = document.getElementById('phone').value;
-      
-      // Validate form fields (you can add your validation logic here)
 
-      // Add the contact to the list
-      addEmergencyContact(name, email, phone);
+// Function to handle form submission
+document.getElementById('emergencyContactForm').addEventListener('submit', function(event) {
+  event.preventDefault(); // Prevent form submission
+  
+  // Get form values
+  var name = document.getElementById('name').value;
+  var email = document.getElementById('email').value;
+  var phone = document.getElementById('phone').value;
+  
+  // Validate form fields (you can add your validation logic here)
 
-      // Reset form fields
-      document.getElementById('name').value = '';
-      document.getElementById('email').value = '';
-      document.getElementById('phone').value = '';
-    });
+  // Add the contact to the list
+  addEmergencyContact(name, email, phone);
 
-    // Function to add emergency contact to the list
-    function addEmergencyContact(name, email, phone) {
-      var contactsList = document.getElementById('emergencyContactsList');
-      var contactItem = document.createElement('li');
-      contactItem.textContent = name + ' - Email: ' + email + ', Phone: ' + phone;
-      contactsList.appendChild(contactItem);
-    }
+  // Reset form fields
+  document.getElementById('name').value = '';
+  document.getElementById('email').value = '';
+  document.getElementById('phone').value = '';
+});
+
+// Function to add emergency contact to the list
+function addEmergencyContact(name, email, phone) {
+  var contactsList = document.getElementById('emergencyContactsList');
+  var contactItem = document.createElement('li');
+  contactItem.textContent = name + ' - Email: ' + email + ', Phone: ' + phone;
+  contactsList.appendChild(contactItem);
+
+  // Send the contact details to the server
+  fetch("{{url_for('add_emergency_contact')}}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      phone: phone
+    })
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+}
+
+
   </script>
 {% endblock %}

@@ -117,18 +117,6 @@ class User(UserMixin,Model):
         except Exception as e:
             raise Exception("Error creating user",e)
         
-    # credentials = ForeignKeyField(UserGoogleFitCredentials, backref='user', ondelete=models.CASCADE, null=True)
-    # def get_credentials(self):
-    #     try:
-    #         return self.user_google_fit_credentials
-    #     except UserGoogleFitCredentials.DoesNotExist:
-    #         return None        
-    # credentials = ForeignKeyField('UserGoogleFitCredentials', backref='user', null=True)
-    # def get_credentials(self):
-    #     try:
-    #         return self.credentials
-    #     except UserGoogleFitCredentials.DoesNotExist:
-    #         return None
 
 class UserGoogleFitCredentials(Model):
     __tablename__ = 'user_google_fit_credentials'
@@ -181,6 +169,32 @@ def load_user(user_id):
 def home():
     return render_template('home.html')
 
+@app.route('/api/emergency-contact', methods=['POST'])
+def add_emergency_contact():
+    if request.method == 'POST':
+        data = request.get_json()
+        user_id = current_user.get_id()
+        contact_name = data['name']
+        contact_number = data['phone']
+        contact_email = data['email']
+
+        user_id = current_user.get_id()
+        
+        new_contact = EmergencyContacts.create(
+            user=user_id,
+            contact_name=contact_name,
+            contact_number=contact_number,
+            contact_email=contact_email,
+        )
+        new_contact.save()      
+        return jsonify({'message': 'Emergency contact added successfully'}), 201
+    
+# @app.route('/api/emergency-contacts', methods=['GET'])
+# def get_emergency_contacts():
+#     user_id = current_user.get_id()
+#     emergency_contacts = EmergencyContacts.select().where(EmergencyContacts.user == user_id)
+#     emergency_contacts = [{'name': contact.contact_name, 'phone': contact.contact_number, 'email': contact.contact_email} for contact in emergency_contacts]
+#     return jsonify(emergency_contacts)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -199,15 +213,6 @@ def signup():
         mobile = request.form['mobile']
         password = request.form['password']
         #hashed_password = generate_password_hash(password)
-        
-        # conn = sqlite3.connect('health.db')
-        # cursor = conn.cursor()
-        # # cursor.execute("INSERT INTO users (firstname, lastname, email, mobilenumber, password) VALUES (%s, %s, %s, %s, %s)",
-        # #             (firstname, lastname, email, countryCode + mobile, hashed_password))
-        # cursor.execute("INSERT INTO users (firstname, lastname, email, mobilenumber, password) VALUES (?, ?, ?, ?, ?)",
-        #                (firstname, lastname, email, countryCode+mobile, hashed_password))
-        # conn.commit()
-        # conn.close()
         
         if User.user_exists(email):
             flash('Email id already exists, Please sign up with new email or Log in.', 'danger')
@@ -313,7 +318,10 @@ def health_metrics():
 @app.route('/emergency-contacts')
 @login_required
 def emergency_contacts():
-    return render_template('emergency-form.html')
+    user_id = current_user.get_id()
+    emergency_contacts = EmergencyContacts.select().where(EmergencyContacts.user == user_id)
+    emergency_contacts = [{'name': contact.contact_name, 'phone': contact.contact_number, 'email': contact.contact_email} for contact in emergency_contacts]  
+    return render_template('emergency-form.html',emergency_contacts=emergency_contacts)
 
 @app.route('/dashboard')
 @login_required
