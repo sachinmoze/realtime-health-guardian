@@ -162,6 +162,18 @@ class HealthMetrics(Model):
     class Meta:
         database = DATABASE
 
+class EmergencyContacts(Model):
+    user = ForeignKeyField(User, 
+                           to_field="id",
+                           backref='emergency_contacts')
+    contact_name = CharField(max_length=50)
+    contact_number = CharField(max_length=15)
+    contact_email = CharField(max_length=100)
+
+    class Meta:
+        database = DATABASE      
+          
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.get(user_id)
