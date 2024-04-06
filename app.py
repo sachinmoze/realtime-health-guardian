@@ -23,8 +23,11 @@ from googleapiclient.discovery import build
 import requests
 
 from celery import Celery
-import celery_config
+#import config
 import redis
+from datetime import datetime
+#from tasks import flask_app, long_running_task #-Line 1
+from celery.result import AsyncResult#-Line 2
 
 CLIENT_SECRETS_FILE = "credentials.json"
 
@@ -41,17 +44,14 @@ login_manager = LoginManager()
 
 
 
+
+
 app = Flask(__name__)
 
 login_manager.init_app(app)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-## Celery declarations
-# app.config.from_object(celery_config)
-# celery = Celery(app.name)
-# celery.config_from_object(celery_config)
-celery = Celery(app.name, broker='redis://localhost:6379/0')
 
 ## Database configurations
 app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
@@ -229,12 +229,6 @@ def delete_emergency_contact():
             print('Emergency contact not found')
             return jsonify({'message': 'Emergency contact not found'}), 404
           
-# @app.route('/api/emergency-contacts', methods=['GET'])
-# def get_emergency_contacts():
-#     user_id = current_user.get_id()
-#     emergency_contacts = EmergencyContacts.select().where(EmergencyContacts.user == user_id)
-#     emergency_contacts = [{'name': contact.contact_name, 'phone': contact.contact_number, 'email': contact.contact_email} for contact in emergency_contacts]
-#     return jsonify(emergency_contacts)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -370,6 +364,7 @@ def emergency_contacts():
 def dashboard():
     user_id = current_user.get_id()
     print(user_id)
+
     return render_template('dashboard.html')
 
 @app.route('/mail-test')
@@ -379,10 +374,6 @@ def mail_test():
     mail.send(msg)
     return "Message sent!"
 
-
-# @property
-# def is_authenticated_google(self):
-#     return session.get('is_authenticated_google_fit', False)
 
 @app.route('/authorize-google-fit')
 @login_required
@@ -450,6 +441,7 @@ def oauth2callback():
         user.authenticated_google_fit = True
         user.save()
         load_user(user.id)
+
         flash('Google Fit authorized successfully', 'success')
         return redirect(url_for('dashboard'))
     except Exception as e:
