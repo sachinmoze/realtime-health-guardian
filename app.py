@@ -172,7 +172,7 @@ class EmergencyContacts(Model):
 
     class Meta:
         database = DATABASE      
-          
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -412,7 +412,7 @@ def google_fit_remove():
 
 def initialize():
     DATABASE.connect()
-    DATABASE.create_tables([User,UserGoogleFitCredentials], safe=True)
+    DATABASE.create_tables([User,UserGoogleFitCredentials,HealthMetrics,EmergencyContacts], safe=True)
     DATABASE.close()
 
 if __name__ == '__main__':
