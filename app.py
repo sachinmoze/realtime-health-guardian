@@ -16,6 +16,22 @@ import os
 from dotenv import load_dotenv, dotenv_values 
 load_dotenv() 
 
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
+import googleapiclient.discovery
+from googleapiclient.discovery import build
+import requests
+CLIENT_SECRETS_FILE = "credentials.json"
+
+SCOPES = [
+          "https://www.googleapis.com/auth/fitness.heart_rate.write", 
+          "https://www.googleapis.com/auth/fitness.location.read", 
+          "https://www.googleapis.com/auth/fitness.location.write", 
+          "https://www.googleapis.com/auth/fitness.heart_rate.read"
+          ]
+API_SERVICE_NAME = 'fitness'
+API_VERSION = 'v1'
+
 login_manager = LoginManager()
 
 app = Flask(__name__)
@@ -50,23 +66,6 @@ mail = Mail(app)
 
 #mongodb+srv://bablumoze:<password>@cluster0.oq3mqne.mongodb.net/
 
-
-
-
-# conn = sqlite3.connect('health.db')
-# cursor = conn.cursor()
-# cursor.execute("""
-#     CREATE TABLE IF NOT EXISTS users (
-#     id INTEGER PRIMARY KEY AUTOINCREMENT,
-#     firstname VARCHAR(50),
-#     lastname VARCHAR(50),
-#     email VARCHAR(100) UNIQUE,
-#     mobilenumber VARCHAR(15),
-#     password VARCHAR(100) NOT NULL
-#         )
-#     """)
-# conn.commit()
-# conn.close()
 
 class SignupForm(FlaskForm):
     firstName = StringField('First Name', validators=[DataRequired()])
@@ -229,6 +228,25 @@ def onboarding():
 def login():
 
     if current_user.is_authenticated:
+
+        user = User.get(User.id == current_user.get_id())
+        if user.authenticated_google_fit:
+            
+            try:
+                credentials= UserGoogleFitCredentials.get(UserGoogleFitCredentials.user == user.id)
+                session['credentials'] = {
+                    'token': credentials.token,
+                    'refresh_token': credentials.refresh_token,
+                    'token_uri': credentials.token_uri,
+                    'client_id': credentials.client_id,
+                    'client_secret': credentials.client_secret,
+                    'scopes': credentials.scopes
+                }
+            except UserGoogleFitCredentials.DoesNotExist:
+                user.authenticated_google_fit = False
+                user.save()
+                load_user(user.id)    
+
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
@@ -279,6 +297,10 @@ def forgotpassword():
 
 @app.route('/logout')
 def logout():
+    if 'credentials' in session:
+        del session['credentials']
+
+
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))    
@@ -296,7 +318,6 @@ def emergency_contacts():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    print("in dashboard",current_user.authenticated_google_fit)
     return render_template('dashboard.html')
 
 @app.route('/mail-test')
@@ -306,24 +327,62 @@ def mail_test():
     mail.send(msg)
     return "Message sent!"
 
-@app.route('/store-fit')
+
+# @property
+# def is_authenticated_google(self):
+#     return session.get('is_authenticated_google_fit', False)
+
+@app.route('/authorize-google-fit')
 @login_required
-def store_fit_credentials():
-    print("in store fit")
-    print(current_user.is_authenticated)
-    if current_user.is_authenticated:
-        
+def authorize_google_fit():
+  # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
+  flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+      CLIENT_SECRETS_FILE, scopes=SCOPES)
+
+  # The URI created here must exactly match one of the authorized redirect URIs
+  # for the OAuth 2.0 client, which you configured in the API Console. If this
+  # value doesn't match an authorized URI, you will get a 'redirect_uri_mismatch'
+  # error.
+  flow.redirect_uri = url_for('oauth2callback', _external=True)
+
+  authorization_url, state = flow.authorization_url(
+      # Enable offline access so that you can refresh an access token without
+      # re-prompting the user for permission. Recommended for web server apps.
+      access_type='offline',
+      # Enable incremental authorization. Recommended as a best practice.
+      include_granted_scopes='true')
+  # Store the state so the callback can verify the auth server response.
+  session['state'] = state
+  return redirect(authorization_url)
+
+@app.route('/oauth2callback')
+@login_required
+def oauth2callback():
+    try:
+        # Specify the state when creating the flow in the callback so that it can
+        # verified in the authorization server response.
+        state = session['state']    
+        flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+            CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
+        flow.redirect_uri = url_for('oauth2callback', _external=True)   
+        # Use the authorization server's response to fetch the OAuth 2.0 tokens.
+        authorization_response = request.url
+        flow.fetch_token(authorization_response=authorization_response) 
+        # Store credentials in the session.
+        # ACTION ITEM: In a production app, you likely want to save these
+        #              credentials in a persistent database instead.
+        credentials = flow.credentials
+        session['credentials'] = credentials_to_dict(credentials)
+
+        ##store the credentials in the database
         user_id = current_user.get_id()
+        token = credentials.token
+        refresh_token = credentials.refresh_token
+        token_uri = credentials.token_uri
+        client_id = credentials.client_id
+        client_secret = credentials.client_secret
+        scopes = credentials.scopes
 
-        # Retrieve data from the request
-        token = "access_token"
-        refresh_token = "refresh_token"
-        token_uri = "token_uri"
-        client_id = "client_id"
-        client_secret = "client_secret"
-        scopes = "scopes"
-
-        # Create a new UserGoogleFitCredentials object
         credentials = UserGoogleFitCredentials.create(
             token=token,
             refresh_token=refresh_token,
@@ -331,84 +390,75 @@ def store_fit_credentials():
             client_id=client_id,
             client_secret=client_secret,
             scopes=scopes,
-            user=user_id  # Associate the credentials with the user
+            user=user_id 
         )
-
-        # Save the credentials
         credentials.save()
 
-        return 'Fit credentials stored successfully'
-    else:
-        return 'User not authenticated'
-@app.route('/fetch-fit')
-@login_required
-def fetch_fit_credentials():
-    # Check if the user is authenticated
-    if current_user.is_authenticated:
-        # Get the user's ID
-        user_id = current_user.get_id()
-
-        # Query the UserGoogleFitCredentials table for the user's fit credentials
-        try:
-            credentials = UserGoogleFitCredentials.get(UserGoogleFitCredentials.user == user_id)
-            # Construct a dictionary with the fit credentials data
-            credentials_data = {
-                'token': credentials.token,
-                'refresh_token': credentials.refresh_token,
-                'token_uri': credentials.token_uri,
-                'client_id': credentials.client_id,
-                'client_secret': credentials.client_secret,
-                'scopes': credentials.scopes
-            }
-            return jsonify(credentials_data)  # Return the fit credentials data as JSON
-        except UserGoogleFitCredentials.DoesNotExist:
-            return 'Fit credentials not found for the user'
-    else:
-        return 'User not authenticated'
-
-@app.route('/google-fit')
-def google_fit():
-    if current_user.is_authenticated:
-        
-        print(current_user)
-        #user_id = current_user.user_id
-        print(current_user.authenticated_google_fit)
-        try:
-            user = User.get(User.id == current_user.get_id())
-            user.authenticated_google_fit = True
-            user.save()
-            load_user(user.id)
-            print(current_user.authenticated_google_fit)
-            return redirect(url_for('dashboard'))
-        except DoesNotExist:
-            # Handle the case where the user ID is not found in the database
-            pass  
+        user = User.get(User.id == current_user.get_id())
+        user.authenticated_google_fit = True
+        user.save()
+        load_user(user.id)
+        flash('Google Fit authorized successfully', 'success')
         return redirect(url_for('dashboard'))
+    except Exception as e:
+        user = User.get(User.id == current_user.get_id())
+        user.authenticated_google_fit = False
+        user.save()
+        load_user(user.id)          
+        flash(f'Error occurred while authorizing Google Fit {e}', 'danger')
+        redirect(url_for('dashboard'))
 
-@app.route('/google-fit-remove')
-def google_fit_remove():
-    if current_user.is_authenticated:
-        
-        #current_user.is_authenticated_google_fit = True
-        #login_user(current_user)
-        print(current_user)
-        #user_id = current_user.user_id
-        print(current_user.authenticated_google_fit)
+def credentials_to_dict(credentials):
+  return {'token': credentials.token,
+          'refresh_token': credentials.refresh_token,
+          'token_uri': credentials.token_uri,
+          'client_id': credentials.client_id,
+          'client_secret': credentials.client_secret,
+          'scopes': credentials.scopes}
+
+@app.route('/revoke')
+def revoke():
+    try:
+        user_id = current_user.get_id()
         try:
-            user = User.get(User.id == current_user.get_id())
+            credentials_data = UserGoogleFitCredentials.get(UserGoogleFitCredentials.user == user_id)
+            credentials = {
+                'token': credentials_data.token,
+                'refresh_token': credentials_data.refresh_token,
+                'token_uri': credentials_data.token_uri,
+                'client_id': credentials_data.client_id,
+                'client_secret': credentials_data.client_secret,
+                'scopes': credentials_data.scopes
+            }
+            credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+            revoke = requests.post('https://oauth2.googleapis.com/revoke',
+            params={'token': credentials.token},
+            headers = {'content-type': 'application/x-www-form-urlencoded'})
+            status_code = getattr(revoke, 'status_code')
+            if status_code == 200:
+                credentials_data.delete_instance()
+                user = User.get(User.id == user_id)
+                user.authenticated_google_fit = False
+                user.save()
+                load_user(user.id)
+                flash('Google Fit access revoked successfully', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('An error occurred while revoking Google Fit access', 'danger')
+                return redirect(url_for('dashboard'))
+            
+        except UserGoogleFitCredentials.DoesNotExist:
+            user = User.get(User.id == user_id)
             user.authenticated_google_fit = False
             user.save()
             load_user(user.id)
-            print(current_user.authenticated_google_fit)
+            flash('Google Fit access not found, Authorize to give access', 'danger')
             return redirect(url_for('dashboard'))
-        except DoesNotExist:
-            # Handle the case where the user ID is not found in the database
-            pass  
-        return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        flash(f'Error occurred while revoking Google Fit {e}', 'danger')
+        redirect(url_for('dashboard'))
 
-# @property
-# def is_authenticated_google(self):
-#     return session.get('is_authenticated_google_fit', False)
 
 def initialize():
     DATABASE.connect()
@@ -417,4 +467,5 @@ def initialize():
 
 if __name__ == '__main__':
     initialize()
-    app.run(host='0.0.0.0',port=5000, debug=True)
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+    app.run(host='0.0.0.0',port=8080, debug=True)

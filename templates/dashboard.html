@@ -32,12 +32,13 @@
           <!-- If user has not authenticated, show alert message -->
           <div class="alert alert-warning" role="alert">
             You need to authenticate to your Google Fit account to access the full dashboard features.
-            <a href="#" class="alert-link">Authenticate now</a>.
+            <a href="{{ url_for('authorize_google_fit') }}" class="alert-link">Authenticate now</a>.
           </div>
           {% endif %}
           <!-- Regular dashboard content -->
 
           {% if current_user.authenticated_google_fit %}
+          <p><a href="{{ url_for('revoke') }}">Revoke Google fit access</a></p>
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Health Stats</h5>
