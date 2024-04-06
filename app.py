@@ -163,7 +163,7 @@ class EmergencyContacts(Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    return User.get(User.id == user_id)
 
 @app.route('/')
 def home():
@@ -189,6 +189,33 @@ def add_emergency_contact():
         new_contact.save()      
         return jsonify({'message': 'Emergency contact added successfully'}), 201
     
+@app.route('/delete-emergency-contact', methods=['DELETE'])
+def delete_emergency_contact():
+    print('running in delete')
+    print(request.method)
+    if request.method == 'DELETE':
+        data = request.get_json()
+        print(data)
+        contact_id = data['id']
+        email = data['email']
+        name = data['name']
+        phone = data['phone']
+        user_id = data["user_id"]
+        try:
+            if contact_id == "null":
+                EmergencyContacts.delete().where(EmergencyContacts.contact_name == name, EmergencyContacts.contact_number == phone,
+                                                  EmergencyContacts.contact_email == email,
+                                                  EmergencyContacts.user_id == user_id
+                                                  ).execute()
+                return jsonify({'message': 'Emergency contact deleted successfully'}), 200
+            else:
+                contact = EmergencyContacts.get(EmergencyContacts.id == contact_id)
+                contact.delete_instance()
+                return jsonify({'message': 'Emergency contact deleted successfully'}), 200
+        except DoesNotExist:
+            print('Emergency contact not found')
+            return jsonify({'message': 'Emergency contact not found'}), 404
+          
 # @app.route('/api/emergency-contacts', methods=['GET'])
 # def get_emergency_contacts():
 #     user_id = current_user.get_id()
@@ -233,8 +260,9 @@ def onboarding():
 def login():
 
     if current_user.is_authenticated:
-
+        print('User is authenticated already. Redirecting to dashboard.')
         user = User.get(User.id == current_user.get_id())
+
         if user.authenticated_google_fit:
             
             try:
@@ -255,6 +283,7 @@ def login():
         return redirect(url_for('dashboard'))
     
     if request.method == 'POST':
+        print('Login form submitted successfully. Processing form data.')
         email = request.form.get('email')
         password = request.form.get('password')
        
@@ -263,9 +292,11 @@ def login():
             return redirect(url_for('login'))
 
         user = User.get(User.email == email)
-        
+        print(user.id)
+        print("hello ",user.firstname)
         if check_password_hash(user.password, password):
             login_user(user)
+            print('User logged in successfully.')
             flash('Login successful!', 'success')
             return redirect(url_for('dashboard'))
         else:
@@ -304,8 +335,6 @@ def forgotpassword():
 def logout():
     if 'credentials' in session:
         del session['credentials']
-
-
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))    
@@ -320,12 +349,14 @@ def health_metrics():
 def emergency_contacts():
     user_id = current_user.get_id()
     emergency_contacts = EmergencyContacts.select().where(EmergencyContacts.user == user_id)
-    emergency_contacts = [{'name': contact.contact_name, 'phone': contact.contact_number, 'email': contact.contact_email} for contact in emergency_contacts]  
+    emergency_contacts = [{'name': contact.contact_name, 'phone': contact.contact_number, 'email': contact.contact_email,'id':contact.id,'user_id':contact.user_id} for contact in emergency_contacts]  
     return render_template('emergency-form.html',emergency_contacts=emergency_contacts)
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    user_id = current_user.get_id()
+    print(user_id)
     return render_template('dashboard.html')
 
 @app.route('/mail-test')
@@ -424,10 +455,16 @@ def credentials_to_dict(credentials):
           'client_secret': credentials.client_secret,
           'scopes': credentials.scopes}
 
-@app.route('/revoke')
-def revoke():
+@app.route('/revoke-google-fit-cred')
+@login_required
+def revoke_google_fit_cred():
+    print("running in revoke")
     try:
+        
+        print("running in revoke")
         user_id = current_user.get_id()
+        print(user_id)
+        #print(session['credentials'])
         try:
             credentials_data = UserGoogleFitCredentials.get(UserGoogleFitCredentials.user == user_id)
             credentials = {
@@ -438,10 +475,14 @@ def revoke():
                 'client_secret': credentials_data.client_secret,
                 'scopes': credentials_data.scopes
             }
+
+            session['credentials'] = credentials
             credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+
             revoke = requests.post('https://oauth2.googleapis.com/revoke',
-            params={'token': credentials.token},
-            headers = {'content-type': 'application/x-www-form-urlencoded'})
+                params={'token': credentials.token},
+                headers = {'content-type': 'application/x-www-form-urlencoded'}
+                )
             status_code = getattr(revoke, 'status_code')
             if status_code == 200:
                 credentials_data.delete_instance()
@@ -449,9 +490,16 @@ def revoke():
                 user.authenticated_google_fit = False
                 user.save()
                 load_user(user.id)
+                session.pop('credentials', None)
                 flash('Google Fit access revoked successfully', 'success')
                 return redirect(url_for('dashboard'))
             else:
+                credentials_data.delete_instance()
+                user = User.get(User.id == user_id)
+                user.authenticated_google_fit = False
+                user.save()
+                load_user(user.id)
+                session.pop('credentials', None)                
                 flash('An error occurred while revoking Google Fit access', 'danger')
                 return redirect(url_for('dashboard'))
             
