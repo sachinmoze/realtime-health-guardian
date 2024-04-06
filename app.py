@@ -208,7 +208,6 @@ def signup():
     return render_template('signup.html', form=form)
 
 
-
 @app.route('/onboarding')
 def onboarding():
     return render_template('onboarding.html')

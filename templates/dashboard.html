@@ -36,6 +36,8 @@
           </div>
           {% endif %}
           <!-- Regular dashboard content -->
+
+          {% if current_user.authenticated_google_fit %}
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Health Stats</h5>
@@ -52,6 +54,7 @@
               <a href="#" id="heartRateMonitoringLink" class="btn btn-primary">Monitor Heart Rate</a>
             </div>
           </div>
+          {% endif %}
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Emergency Contacts</h5>
