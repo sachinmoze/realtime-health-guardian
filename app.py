@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session,jsonify
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 import json
@@ -280,12 +280,70 @@ def mail_test():
     mail.send(msg)
     return "Message sent!"
 
+@app.route('/store-fit')
+@login_required
+def store_fit_credentials():
+    print("in store fit")
+    print(current_user.is_authenticated)
+    if current_user.is_authenticated:
+        
+        user_id = current_user.get_id()
+
+        # Retrieve data from the request
+        token = "access_token"
+        refresh_token = "refresh_token"
+        token_uri = "token_uri"
+        client_id = "client_id"
+        client_secret = "client_secret"
+        scopes = "scopes"
+
+        # Create a new UserGoogleFitCredentials object
+        credentials = UserGoogleFitCredentials.create(
+            token=token,
+            refresh_token=refresh_token,
+            token_uri=token_uri,
+            client_id=client_id,
+            client_secret=client_secret,
+            scopes=scopes,
+            user=user_id  # Associate the credentials with the user
+        )
+
+        # Save the credentials
+        credentials.save()
+
+        return 'Fit credentials stored successfully'
+    else:
+        return 'User not authenticated'
+@app.route('/fetch-fit')
+@login_required
+def fetch_fit_credentials():
+    # Check if the user is authenticated
+    if current_user.is_authenticated:
+        # Get the user's ID
+        user_id = current_user.get_id()
+
+        # Query the UserGoogleFitCredentials table for the user's fit credentials
+        try:
+            credentials = UserGoogleFitCredentials.get(UserGoogleFitCredentials.user == user_id)
+            # Construct a dictionary with the fit credentials data
+            credentials_data = {
+                'token': credentials.token,
+                'refresh_token': credentials.refresh_token,
+                'token_uri': credentials.token_uri,
+                'client_id': credentials.client_id,
+                'client_secret': credentials.client_secret,
+                'scopes': credentials.scopes
+            }
+            return jsonify(credentials_data)  # Return the fit credentials data as JSON
+        except UserGoogleFitCredentials.DoesNotExist:
+            return 'Fit credentials not found for the user'
+    else:
+        return 'User not authenticated'
+
 @app.route('/google-fit')
 def google_fit():
     if current_user.is_authenticated:
         
-        #current_user.is_authenticated_google_fit = True
-        #login_user(current_user)
         print(current_user)
         #user_id = current_user.user_id
         print(current_user.authenticated_google_fit)
