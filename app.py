@@ -10,6 +10,7 @@ from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
 
 from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist,BooleanField,ForeignKeyField,DateTimeField,FloatField
+from db_models import User,UserGoogleFitCredentials,HealthMetrics,EmergencyContacts,DATABASE
 from flask_mail import Mail, Message
 
 import os
@@ -25,17 +26,36 @@ import requests
 from celery import Celery
 #import config
 import redis
-from datetime import datetime
+from datetime import datetime, timedelta,timezone
 #from tasks import flask_app, long_running_task #-Line 1
 from celery.result import AsyncResult#-Line 2
 
 CLIENT_SECRETS_FILE = "credentials.json"
 
-SCOPES = [
+SCOPES = ['https://www.googleapis.com/auth/fitness.activity.read',
+           "https://www.googleapis.com/auth/fitness.blood_glucose.read", 
           "https://www.googleapis.com/auth/fitness.heart_rate.write", 
           "https://www.googleapis.com/auth/fitness.location.read", 
           "https://www.googleapis.com/auth/fitness.location.write", 
-          "https://www.googleapis.com/auth/fitness.heart_rate.read"
+          "https://www.googleapis.com/auth/fitness.blood_glucose.write",
+            "https://www.googleapis.com/auth/fitness.sleep.read",
+              "https://www.googleapis.com/auth/fitness.body.read", 
+              "https://www.googleapis.com/auth/fitness.oxygen_saturation.read", 
+              "https://www.googleapis.com/auth/fitness.sleep.write",
+              "https://www.googleapis.com/auth/fitness.body.write", 
+              "https://www.googleapis.com/auth/fitness.oxygen_saturation.write", 
+              "https://www.googleapis.com/auth/fitness.body_temperature.read", 
+              "https://www.googleapis.com/auth/fitness.nutrition.read", 
+              "https://www.googleapis.com/auth/fitness.body_temperature.write", 
+              "https://www.googleapis.com/auth/fitness.nutrition.write", 
+              "https://www.googleapis.com/auth/fitness.reproductive_health.read", 
+              "https://www.googleapis.com/auth/fitness.activity.read", 
+              "https://www.googleapis.com/auth/fitness.blood_pressure.read", 
+              "https://www.googleapis.com/auth/fitness.reproductive_health.write", 
+              "https://www.googleapis.com/auth/fitness.activity.write", 
+              "https://www.googleapis.com/auth/fitness.blood_pressure.write", 
+              "https://www.googleapis.com/auth/fitness.heart_rate.read"
+          
           ]
 API_SERVICE_NAME = 'fitness'
 API_VERSION = 'v1'
@@ -87,91 +107,7 @@ class SignupForm(FlaskForm):
     countryCode = StringField('Country Code', validators=[DataRequired()])
     mobile = StringField('Mobile Number', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
-    confirmPassword = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-
-
-DATABASE = SqliteDatabase("health1.db")
-
-
-
-
-class User(UserMixin,Model):
-    #id = IntegerField(primary_key=True)
-    firstname = CharField(max_length=50)
-    lastname = CharField(max_length=50)
-    email = CharField(max_length=100, unique=True)
-    mobilenumber = CharField(max_length=15)
-    password = CharField(max_length=100)
-    authenticated_google_fit = BooleanField(default=False)
-
-    class Meta:
-        database = DATABASE
-
-    @classmethod
-    def user_exists(cls, email):
-        try:
-            user = cls.get(cls.email == email)
-            return True
-        except cls.DoesNotExist:
-            return False
-
-    @classmethod
-    def create_user(cls, firstname, lastname, email, mobilenumber, password):
-        try:
-            hashed_password = generate_password_hash(password)
-            user = cls.create(
-                firstname=firstname,
-                lastname=lastname,
-                email=email,
-                mobilenumber=mobilenumber,
-                password=hashed_password
-            )
-            return user
-        except Exception as e:
-            raise Exception("Error creating user",e)
-        
-
-class UserGoogleFitCredentials(Model):
-    __tablename__ = 'user_google_fit_credentials'
-    token = CharField()
-    refresh_token = CharField()
-    token_uri = CharField()
-    client_id = CharField()
-    client_secret = CharField()
-    scopes = CharField()
-    user = ForeignKeyField(User, 
-                           backref='user_google_fit_credentials', 
-                           to_field="id", 
-                           #related_name="users"
-                           )
-    class Meta:
-        database = DATABASE
-
-class HealthMetrics(Model):
-    user = ForeignKeyField(User, 
-                           to_field="id",
-                           backref='health_metrics')
-    heart_rate = FloatField()
-    latitude = FloatField(null=True)
-    longitude = FloatField(null=True)
-    distance = FloatField(null=True)
-    starttime = DateTimeField()
-    endtime = DateTimeField()
-    modifiedtime = DateTimeField()
-
-    class Meta:
-        database = DATABASE
-
-class EmergencyContacts(Model):
-    user = ForeignKeyField(User, 
-                           to_field="id",
-                           backref='emergency_contacts')
-    contact_name = CharField(max_length=50)
-    contact_number = CharField(max_length=15)
-    contact_email = CharField(max_length=100)
-
-    class Meta:
-        database = DATABASE      
+    confirmPassword = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])   
 
 
 @login_manager.user_loader
@@ -274,14 +210,7 @@ def login():
             
             try:
                 credentials= UserGoogleFitCredentials.get(UserGoogleFitCredentials.user == user.id)
-                session['credentials'] = {
-                    'token': credentials.token,
-                    'refresh_token': credentials.refresh_token,
-                    'token_uri': credentials.token_uri,
-                    'client_id': credentials.client_id,
-                    'client_secret': credentials.client_secret,
-                    'scopes': credentials.scopes
-                }
+                session['credentials'] = credentials_to_dict(credentials)
             except UserGoogleFitCredentials.DoesNotExist:
                 user.authenticated_google_fit = False
                 user.save()
@@ -425,7 +354,6 @@ def oauth2callback():
         client_id = credentials.client_id
         client_secret = credentials.client_secret
         scopes = credentials.scopes
-
         credentials = UserGoogleFitCredentials.create(
             token=token,
             refresh_token=refresh_token,
@@ -433,10 +361,11 @@ def oauth2callback():
             client_id=client_id,
             client_secret=client_secret,
             scopes=scopes,
-            user=user_id 
+            user_id=user_id,
+            updated_at=datetime.now() 
         )
         credentials.save()
-
+        print("Credentials stored successfully")
         user = User.get(User.id == current_user.get_id())
         user.authenticated_google_fit = True
         user.save()
@@ -445,6 +374,7 @@ def oauth2callback():
         flash('Google Fit authorized successfully', 'success')
         return redirect(url_for('dashboard'))
     except Exception as e:
+        print("Error occurred while authorizing Google Fit",e)
         user = User.get(User.id == current_user.get_id())
         user.authenticated_google_fit = False
         user.save()
@@ -460,6 +390,222 @@ def credentials_to_dict(credentials):
           'client_secret': credentials.client_secret,
           'scopes': credentials.scopes}
 
+def nanos_to_datetime(nanos):
+    # Convert nanoseconds to seconds
+    seconds = int(nanos) / 1e9
+    # Convert seconds to datetime 
+    utc_datetime = datetime.fromtimestamp(seconds, timezone.utc)
+    # Convert UTC datetime to GMT
+    gmt_datetime = utc_datetime.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S GMT')
+    return gmt_datetime
+
+def millis_to_datetime(millis):
+    # Convert milliseconds to seconds
+    seconds = int(millis) / 1000
+    # Convert seconds to datetime object
+    utc_datetime = datetime.fromtimestamp(seconds, timezone.utc)
+    # Convert UTC datetime to GMT
+    gmt_datetime = utc_datetime.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S GMT')
+    return gmt_datetime
+
+@app.route('/store-heart-rate')
+def store_heartrate_data():
+    user_id = current_user.get_id()
+    params = {"user_id": user_id,"data_type":"all"}
+    response = requests.get('http://localhost:8080/api/fetch-heart-rate',params=params)  # Update the URL with your actual server URL
+
+    #return response.json()['response']
+    if response.status_code == 200:
+        health_metrics = response.json()['response']
+        #"deletedDataPoint",
+        data_points=["insertedDataPoint"]
+        #update_google_fit_credentials(user_id,response.json()['updated_creds'])
+        for data_point in data_points:
+            for metric in health_metrics.get(data_point):
+
+                heart_rate = metric["value"][0]["fpVal"]
+
+                starttime = nanos_to_datetime(metric.get('startTimeNanos'))
+                endtime = nanos_to_datetime(metric.get('endTimeNanos'))
+                modifiedtime = millis_to_datetime(metric.get('modifiedTimeMillis'))
+                latitude = 0
+                longitude = 0
+                distance = 0
+
+                if HealthMetrics.select().where(HealthMetrics.starttime == starttime).exists():
+                    pass
+                else:
+                    print("Updating heart rate",heart_rate)
+                    health_metrics = HealthMetrics.create(
+                        user=user_id,
+                        heart_rate=heart_rate,
+                        latitude=latitude,
+                        longitude=longitude,
+                        distance=distance,
+                        starttime=starttime,
+                        endtime=endtime,
+                        modifiedtime=modifiedtime,
+                        updated_at=datetime.now()
+                    )
+                    health_metrics.save()
+        flash("updated data to database")
+        return redirect('dashboard')
+    else:
+        flash(f"Error occurred while fetching heart rate data {response.json()['response']}", 'danger')
+        return redirect('dashboard')
+
+@app.route('/store-heart-rate-new')
+def store_heartrate_data_today():
+    user_id = current_user.get_id()
+    starttime = datetime.now() - timedelta(days=1) 
+    endtime = datetime.now()
+    params = {"user_id": user_id,"starttime":starttime,"endtime":endtime,"data_type":"today"}
+    response = requests.get('http://localhost:8080/api/fetch-heart-rate',params=params)  # Update the URL with your actual server URL
+
+    if response.status_code == 200:
+        health_metrics = response.json()['response']
+        #"deletedDataPoint",
+        data_points=["point"]
+        
+        for data_point in data_points:
+            for metric in health_metrics.get(data_point):
+
+                heart_rate = metric["value"][0]["fpVal"]
+
+                starttime = nanos_to_datetime(metric.get('startTimeNanos'))
+                endtime = nanos_to_datetime(metric.get('endTimeNanos'))
+                modifiedtime = millis_to_datetime(metric.get('modifiedTimeMillis'))
+                latitude = 0
+                longitude = 0
+                distance = 0
+
+                if HealthMetrics.select().where(HealthMetrics.starttime == starttime).exists():
+                    pass
+                else:
+                    print("Updating heart rate",heart_rate)
+                    health_metrics = HealthMetrics.create(
+                        user=user_id,
+                        heart_rate=heart_rate,
+                        latitude=latitude,
+                        longitude=longitude,
+                        distance=distance,
+                        starttime=starttime,
+                        endtime=endtime,
+                        modifiedtime=modifiedtime,
+                        updated_at=datetime.now()
+                    )
+                    health_metrics.save()
+        flash("updated data to database")
+        return redirect('dashboard')
+    else:
+        flash(f"Error occurred while fetching heart rate data {response.json()['response']}", 'danger')
+        return redirect('dashboard')
+
+def update_google_fit_credentials(user_id, credentials_data):
+    user_id = user_id
+    credentials = UserGoogleFitCredentials.get(UserGoogleFitCredentials.user == user_id)
+    if credentials:
+        # Check if all parameters are the same
+        if (credentials.token == credentials_data.get('token') and
+            credentials.refresh_token == credentials_data.get('refresh_token') and
+            credentials.token_uri == credentials_data.get('token_uri') and
+            credentials.client_id == credentials_data.get('client_id') and
+            credentials.client_secret == credentials_data.get('client_secret') and
+            credentials.scopes == credentials_data.get('scopes')):
+            print("All parameters are the same. No update needed.")
+        
+        else:
+            credentials.token = credentials_data.get('token')
+            credentials.refresh_token = credentials_data.get('refresh_token')
+            credentials.token_uri = credentials_data.get('token_uri')
+            credentials.client_id = credentials_data.get('client_id')
+            credentials.client_secret = credentials_data.get('client_secret')
+            credentials.scopes = credentials_data.get('scopes')
+            # Save the updated credentials
+            credentials.save()
+            print("Credentials updated successfully.")
+    else:
+        print("Credentials not found for the user.")
+
+
+def create_fitness_service_and_get_data_all(credentials):
+    
+    print("running in create fitness service and get data")
+    session['credentials'] = credentials
+    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    fitness_service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
+    heart_rate_data = fitness_service.users().dataSources().dataPointChanges().list(userId='me',
+                                                                                               dataSourceId='derived:com.google.heart_rate.bpm:com.google.android.gms:merge_heart_rate_bpm').execute()
+    
+    session['credentials'] = credentials_to_dict(credentials)
+      
+    return heart_rate_data, credentials_to_dict(credentials)    
+
+def create_fitness_service_and_get_data_today(credentials, dataset_id):
+
+    print("Running in create_fitness_service_and_get_data to fetch today data")
+
+    
+    credentials_obj = google.oauth2.credentials.Credentials(**credentials)
+    fitness_service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials_obj)
+
+    # Execute API request to retrieve data for the specified dataset ID
+    data = fitness_service.users().dataSources().datasets().get(
+        userId='me',
+        dataSourceId="derived:com.google.heart_rate.bpm:com.google.android.gms:merge_heart_rate_bpm",
+        datasetId=dataset_id
+    ).execute()
+
+    # Update session credentials
+    session['credentials'] = credentials_to_dict(credentials_obj)
+
+    # Return the retrieved data and credentials
+    return data, credentials_to_dict(credentials_obj)
+
+def datetime_to_nanos(dt):
+    if isinstance(dt, str):
+        dt = datetime.fromisoformat(dt)  # Convert string to datetime object
+    # Convert datetime object to seconds since epoch
+    seconds = dt.timestamp()
+    # Convert seconds to nanoseconds
+    nanos = seconds * 1e9
+    return int(nanos)
+
+@app.route('/api/fetch-heart-rate', methods=['GET'])
+#@login_required
+def fetch_heart_rate():
+    try:
+        user_id = request.args.get('user_id')
+        data_type = request.args.get('data_type')
+        starttime= request.args.get('starttime')
+        endtime = request.args.get('endtime')
+        credentials_data = UserGoogleFitCredentials.get(UserGoogleFitCredentials.user_id == user_id)
+        credentials = credentials_to_dict(credentials_data)
+        
+        # Fetch heart rate data and update session credentials
+        if data_type.lower() == "all":
+            heart_rate_data, new_creds = create_fitness_service_and_get_data_all(credentials)
+        if data_type.lower() == "today":
+            start=str(datetime_to_nanos(starttime))
+            end = str(datetime_to_nanos(endtime))
+            dataset_id = start + "-" + end
+            heart_rate_data, new_creds = create_fitness_service_and_get_data_today(credentials, dataset_id)
+        
+        update_google_fit_credentials(user_id, new_creds) 
+        
+        # Return the heart rate data as JSON response
+        return jsonify({"response": heart_rate_data}),200
+        
+    except UserGoogleFitCredentials.DoesNotExist:
+        user = User.get(User.id == user_id)
+        user.authenticated_google_fit = False
+        user.save()
+        load_user(user.id)
+        jsonify({"response": "Google Fit access not found, Authorize to give access"}),404 
+        
+    except Exception as e:
+        return jsonify({"response": f'Error occurred while fetching heart rate: {e}'}),500
+
 @app.route('/revoke-google-fit-cred')
 @login_required
 def revoke_google_fit_cred():
@@ -472,14 +618,7 @@ def revoke_google_fit_cred():
         #print(session['credentials'])
         try:
             credentials_data = UserGoogleFitCredentials.get(UserGoogleFitCredentials.user == user_id)
-            credentials = {
-                'token': credentials_data.token,
-                'refresh_token': credentials_data.refresh_token,
-                'token_uri': credentials_data.token_uri,
-                'client_id': credentials_data.client_id,
-                'client_secret': credentials_data.client_secret,
-                'scopes': credentials_data.scopes
-            }
+            credentials = credentials_to_dict(credentials_data)
 
             session['credentials'] = credentials
             credentials = google.oauth2.credentials.Credentials(**session['credentials'])

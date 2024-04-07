@@ -39,6 +39,8 @@
 
           {% if current_user.authenticated_google_fit %}
           <p><a href="{{ url_for('revoke_google_fit_cred') }}">Revoke Google fit access</a></p>
+          <p><a href="{{ url_for('store_heartrate_data') }}">Sync All Data</a></p>
+          <p><a href="{{ url_for('store_heartrate_data_today') }}">Sync today's Data</a></p>
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Health Stats</h5>
