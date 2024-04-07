@@ -354,11 +354,18 @@ def oauth2callback():
         user_id = current_user.get_id()
         print("Storing google fit credentials in the database")
         token = credentials.token
+
+        #print("Token",token,type(token))
         refresh_token = credentials.refresh_token
+        #print("Refresh Token",refresh_token,type(refresh_token))
         token_uri = credentials.token_uri
+        #print("Token URI",token_uri,type(token_uri))
         client_id = credentials.client_id
+        #print("Client ID",client_id,type(client_id))
         client_secret = credentials.client_secret
+        #print("Client Secret",client_secret,type(client_secret))
         scopes = credentials.scopes
+        #print("Scopes",scopes,type(scopes))
         credentials = UserGoogleFitCredentials.create(
             token=token,
             refresh_token=refresh_token,
@@ -446,7 +453,7 @@ def store_heartrate_data():
                 longitude = 0
                 distance = 0
 
-                if HealthMetrics.select().where(HealthMetrics.starttime == starttime).exists():
+                if HealthMetrics.select().where((HealthMetrics.starttime == starttime) & (HealthMetrics.user_id==user_id)).exists():
                     pass
                 else:
                     print("Updating heart rate",heart_rate)
@@ -493,7 +500,8 @@ def store_heartrate_data_today():
                 longitude = 0
                 distance = 0
 
-                if HealthMetrics.select().where(HealthMetrics.starttime == starttime).exists():
+                if HealthMetrics.select().where((HealthMetrics.starttime == starttime) & (HealthMetrics.user_id==user_id)).exists():
+                    #print("Data already exists",heart_rate)
                     pass
                 else:
                     print("Updating heart rate",heart_rate)
