@@ -21,6 +21,8 @@ import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 from googleapiclient.discovery import build
+import google.auth.transport.requests
+
 import requests
 
 from celery import Celery
@@ -210,7 +212,7 @@ def login():
             
             try:
                 credentials= UserGoogleFitCredentials.get(UserGoogleFitCredentials.user == user.id)
-                session['credentials'] = credentials_to_dict(credentials)
+                #session['credentials'] = credentials_to_dict(credentials)
             except UserGoogleFitCredentials.DoesNotExist:
                 user.authenticated_google_fit = False
                 user.save()
@@ -333,10 +335,12 @@ def oauth2callback():
     try:
         # Specify the state when creating the flow in the callback so that it can
         # verified in the authorization server response.
-        state = session['state']    
+        state = session['state']   
+        print("running in oauth2callback") 
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
             CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
-        flow.redirect_uri = url_for('oauth2callback', _external=True)   
+        flow.redirect_uri = url_for('oauth2callback', _external=True)  
+        flow.access_type = 'offline' 
         # Use the authorization server's response to fetch the OAuth 2.0 tokens.
         authorization_response = request.url
         flow.fetch_token(authorization_response=authorization_response) 
@@ -344,10 +348,11 @@ def oauth2callback():
         # ACTION ITEM: In a production app, you likely want to save these
         #              credentials in a persistent database instead.
         credentials = flow.credentials
-        session['credentials'] = credentials_to_dict(credentials)
+        #session['credentials'] = credentials_to_dict(credentials)
 
         ##store the credentials in the database
         user_id = current_user.get_id()
+        print("Storing google fit credentials in the database")
         token = credentials.token
         refresh_token = credentials.refresh_token
         token_uri = credentials.token_uri
@@ -383,12 +388,21 @@ def oauth2callback():
         redirect(url_for('dashboard'))
 
 def credentials_to_dict(credentials):
+  print("running in credentials to dict")
+  print(type(credentials.scopes))
+  if not isinstance(credentials.scopes, list):
+      print("converting scopes to list")
+      scopes=eval(credentials.scopes)
+  else:
+      scopes = credentials.scopes   
+  print(scopes)
+  print(type(scopes))     
   return {'token': credentials.token,
           'refresh_token': credentials.refresh_token,
           'token_uri': credentials.token_uri,
           'client_id': credentials.client_id,
           'client_secret': credentials.client_secret,
-          'scopes': credentials.scopes}
+          'scopes': scopes}
 
 def nanos_to_datetime(nanos):
     # Convert nanoseconds to seconds
@@ -448,7 +462,7 @@ def store_heartrate_data():
                         updated_at=datetime.now()
                     )
                     health_metrics.save()
-        flash("updated data to database")
+        flash("updated data to database", 'success')
         return redirect('dashboard')
     else:
         flash(f"Error occurred while fetching heart rate data {response.json()['response']}", 'danger')
@@ -495,7 +509,7 @@ def store_heartrate_data_today():
                         updated_at=datetime.now()
                     )
                     health_metrics.save()
-        flash("updated data to database")
+        flash("updated data to database", 'success')
         return redirect('dashboard')
     else:
         flash(f"Error occurred while fetching heart rate data {response.json()['response']}", 'danger')
@@ -531,22 +545,39 @@ def update_google_fit_credentials(user_id, credentials_data):
 def create_fitness_service_and_get_data_all(credentials):
     
     print("running in create fitness service and get data")
-    session['credentials'] = credentials
-    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-    fitness_service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
+    #session['credentials'] = credentials
+
+    credentials_obj = google.oauth2.credentials.Credentials(**credentials)
+    #credentials_obj = google.oauth2.credentials.Credentials(**session['credentials'])
+    # Check if the access token is expired
+    if credentials_obj.expired:
+        # Refresh the token
+        request = google.auth.transport.requests.Request()
+        credentials_obj.refresh(request)
+
+        # Update the credentials in the session
+        #session['credentials'] = credentials_to_dict(credentials_obj)    
+    
+    fitness_service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials_obj)
     heart_rate_data = fitness_service.users().dataSources().dataPointChanges().list(userId='me',
                                                                                                dataSourceId='derived:com.google.heart_rate.bpm:com.google.android.gms:merge_heart_rate_bpm').execute()
     
-    session['credentials'] = credentials_to_dict(credentials)
+    #session['credentials'] = credentials_to_dict(credentials_obj)
       
-    return heart_rate_data, credentials_to_dict(credentials)    
+    return heart_rate_data, credentials_to_dict(credentials_obj)    
 
 def create_fitness_service_and_get_data_today(credentials, dataset_id):
 
     print("Running in create_fitness_service_and_get_data to fetch today data")
 
-    
     credentials_obj = google.oauth2.credentials.Credentials(**credentials)
+    #credentials_obj = google.oauth2.credentials.Credentials(**session['credentials'])
+    # Check if the access token is expired
+    if credentials_obj.expired:
+        # Refresh the token
+        request = google.auth.transport.requests.Request()
+        credentials_obj.refresh(request)    
+    #credentials_obj = google.oauth2.credentials.Credentials(**credentials)
     fitness_service = build(API_SERVICE_NAME, API_VERSION, credentials=credentials_obj)
 
     # Execute API request to retrieve data for the specified dataset ID
@@ -557,7 +588,7 @@ def create_fitness_service_and_get_data_today(credentials, dataset_id):
     ).execute()
 
     # Update session credentials
-    session['credentials'] = credentials_to_dict(credentials_obj)
+    #session['credentials'] = credentials_to_dict(credentials_obj)
 
     # Return the retrieved data and credentials
     return data, credentials_to_dict(credentials_obj)
@@ -621,8 +652,8 @@ def revoke_google_fit_cred():
             credentials = credentials_to_dict(credentials_data)
 
             session['credentials'] = credentials
-            credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-
+            #credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+            credentials = google.oauth2.credentials.Credentials(**credentials)
             revoke = requests.post('https://oauth2.googleapis.com/revoke',
                 params={'token': credentials.token},
                 headers = {'content-type': 'application/x-www-form-urlencoded'}
