@@ -402,7 +402,7 @@ def credentials_to_dict(credentials):
       scopes=eval(credentials.scopes)
   else:
       scopes = credentials.scopes   
-  print(scopes)
+  #print(scopes)
   print(type(scopes))     
   return {'token': credentials.token,
           'refresh_token': credentials.refresh_token,
