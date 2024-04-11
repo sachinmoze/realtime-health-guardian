@@ -721,18 +721,18 @@ def fetch_heart_rate_today():
                        ]
     return jsonify({"response":heart_rate_data}), 200
 
-def calculate_average_heart_rate(data):
-    daily_heart_rates = defaultdict(list)
-    for entry in data:
-        starttime = datetime.strptime(entry['starttime'], '%Y-%m-%d %H:%M:%S')
-        date = starttime.day
-        daily_heart_rates[date].append(entry['heart_rate'])
-    average_heart_rates = {"date":[],"average":[]}
-    for date, heart_rates in daily_heart_rates.items():
-        #average_heart_rates[date] = sum(heart_rates) / len(heart_rates)
-        average_heart_rates["date"].append(date)
-        average_heart_rates["average"].append(sum(heart_rates) / len(heart_rates))
-    return average_heart_rates
+# def calculate_average_heart_rate(data):
+#     daily_heart_rates = defaultdict(list)
+#     for entry in data:
+#         starttime = datetime.strptime(entry['starttime'], '%Y-%m-%d %H:%M:%S')
+#         date = starttime.day
+#         daily_heart_rates[date].append(entry['heart_rate'])
+#     average_heart_rates = {"date":[],"average":[]}
+#     for date, heart_rates in daily_heart_rates.items():
+#         #average_heart_rates[date] = sum(heart_rates) / len(heart_rates)
+#         average_heart_rates["date"].append(date)
+#         average_heart_rates["average"].append(sum(heart_rates) / len(heart_rates))
+#     return average_heart_rates
 
 @app.route('/fetch-heart-rate-average-data', methods=['POST','GET'])
 def fetch_heart_rate_average_data():
@@ -744,17 +744,34 @@ def fetch_heart_rate_average_data():
         year = data.get('year')
         selected_month = int(month)
         selected_year = int(year)
+        cursor = DATABASE.cursor()
+        query = "SELECT AVG(heart_rate) AS avg,SUBSTR(starttime, 0, 11) AS newdate,SUBSTR(starttime, 9, 2) AS Day FROM healthmetrics WHERE SUBSTR(starttime, 6, 2) = ? AND SUBSTR(starttime, 1, 4) = ? AND user_id = ? GROUP BY newdate"
+        cursor.execute(query, (month, year,user_id))
+        rows = cursor.fetchall()
+        cursor.close()
+        average_heart_rates = {"date":[],"average":[]}
+        for row in rows:
+            print(row[0],row[1],row[2])
+            average_heart_rates["date"].append(row[2])
+            average_heart_rates["average"].append(row[0])
+        return jsonify({"response":average_heart_rates}),200
+    else:
+        return jsonify({"response":"Method not allowed"}), 405
 
-        start_of_month = datetime(selected_year, selected_month, 1,0, 0, 0)
-        print("Start of month",start_of_month)
+@app.route('/fetch-heart-rate-selectedt-date', methods=['POST','GET'])
+def fetch_heart_rate_for_selected_date():
+    if request.method == 'POST':
+        user_id = current_user.get_id()
+        data = request.get_json()
 
-        end_of_month = start_of_month.replace(day=1, month=start_of_month.month+1) - timedelta(days=1)
-        print("End of month",end_of_month)
+        date = data.get('date')
+        selected_date = datetime.strptime(date, '%Y-%m-%d')
+        print(selected_date)
         # Query to fetch data for the selected month
         heart_rate_data = HealthMetrics.select().where(
     (HealthMetrics.user_id == user_id) &
-    (HealthMetrics.starttime >= start_of_month) &
-    (HealthMetrics.starttime <= end_of_month)
+    (HealthMetrics.starttime >= selected_date) &
+    (HealthMetrics.starttime <= selected_date.replace(hour=23, minute=59, second=59))
                 ).order_by(HealthMetrics.starttime.asc())
 
         # Convert the data to JSON
@@ -771,8 +788,8 @@ def fetch_heart_rate_average_data():
                     'starttime': data.starttime.strftime('%Y-%m-%d %H:%M:%S')
                 })
 
-        print(calculate_average_heart_rate(heart_rate_data_json))
-        return jsonify({"response":calculate_average_heart_rate(heart_rate_data_json)}), 200
+        print(heart_rate_data_json)
+        return jsonify({"response":heart_rate_data_json}), 200
     else:
         return jsonify({"response":"Method not allowed"}), 405
 
