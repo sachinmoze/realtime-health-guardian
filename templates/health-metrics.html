@@ -47,6 +47,7 @@
               </p>
             </div>
           </div>
+
           <!-- Month and Year selector -->
           <div class="form-row">
             <div class="form-group col-md-3">
@@ -57,6 +58,7 @@
                 <!-- Add options for all months -->
               </select>
             </div>
+
             <div class="form-group col-md-3">
               <label for="yearSelector">Select Year:</label>
               <select id="yearSelector" class="form-control">
@@ -70,6 +72,8 @@
           <div class="chart-container">
             <canvas id="heartRateChart"></canvas>
           </div>
+
+
           <!-- Heart rate data display for previous dates -->
           <div class="row">
             <div class="col-md-6">
@@ -105,13 +109,8 @@ $(document).ready(function() {
     var heartRateTodayList = $('#heartRateReadingsToday');
 
     // Fetch heart rate data from the server
-    fetch("{{ url_for('fetch_heart_rate_today') }}").then((data) => data.json()).then((data) => {
-    //$.ajax({
-    //  url: "{{ url_for('fetch_heart_rate_today') }}",
-    //  type: "GET",
-    //  dataType: "json",
-    //  success: function(data) {
-        // Clear previous readings
+    fetch("{{ url_for('fetch_heart_rate_today') }}",{ method: 'GET' }).then((data) => data.json()).then((data) => {
+
         heartRateTodayList.empty();
 
         // Iterate over the fetched heart rate data and add it to the UI
@@ -121,7 +120,7 @@ $(document).ready(function() {
         });
     })
       //error: 
-      .catch((error)=>    //(xhr, status, error) {
+      .catch((error)=> 
         console.error('Error fetching heart rate data:', error));
       
   };
@@ -130,7 +129,47 @@ $(document).ready(function() {
   updateHeartRateReadings();
 
   // Update heart rate readings every 30 seconds
-  setInterval(updateHeartRateReadings, 3000);
+  setInterval(updateHeartRateReadings, 30000);
+
+// Function to fetch heart rate data based on selected month and year
+function fetchHeartRateData() {
+  var month = $("#monthSelector").val();
+  var year = $("#yearSelector").val();
+
+  // Make a POST request to fetch heart rate data for the selected month and year
+  fetch("{{ url_for('fetch_heart_rate_average_data') }}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ month: month, year: year })
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Extract labels (times) and heart rate values from the fetched data
+    var labels = data.map(function(entry) {
+      return entry.starttime;
+    });
+    var heartRates = data.map(function(entry) {
+      return entry.heart_rate;
+    });
+
+    // Update the chart with the fetched data
+    heartRateChart.data.labels = labels;
+    heartRateChart.data.datasets[0].data = heartRates;
+    heartRateChart.update();
+  })
+  .catch(error => console.error('Error fetching heart rate data:', error));
+}
+
+// Call fetchHeartRateData function when the month or year selector changes
+$("#monthSelector, #yearSelector").change(fetchHeartRateData);
+
+// Initial fetch of heart rate data when the page loads
+fetchHeartRateData();
+
+
+
 });
 </script>
 {% endblock %}

@@ -705,8 +705,8 @@ def fetch_heart_rate_today():
     print(user_id)
 
     ##Fetching heart rate data from database
-    #today=datetime.now()-timedelta(days=1)
-    today=datetime.now()
+    today=datetime.now()-timedelta(days=1)
+    #today=datetime.now()
     print(today.date())
     heart_rate_data = HealthMetrics.select().where((HealthMetrics.user_id == user_id) &
                                                    (HealthMetrics.starttime >= datetime.combine(today, datetime.min.time())) &
@@ -720,7 +720,38 @@ def fetch_heart_rate_today():
                        ]
     return jsonify({"response":heart_rate_data}), 200
 
+@app.route('/fetch-heart-rate-average-data', methods=['POST','GET'])
+def fetch_heart_rate_average_data():
+    if request.method == 'POST':
+        user_id = current_user.get_id()
+        data = request.get_json()
 
+        month = data.get('month')
+        year = data.get('year')
+        selected_month = int(month)
+        selected_year = int(year)
+
+        start_of_month = datetime(selected_year, selected_month, 1)
+        print("Start of month",start_of_month)
+
+        end_of_month = start_of_month.replace(day=1, month=start_of_month.month+1) - timedelta(days=1)
+        print("End of month",end_of_month)
+        # Query to fetch data for the selected month
+        heart_rate_data = HealthMetrics.select().where(
+            (HealthMetrics.user_id == user_id) &
+            (HealthMetrics.starttime >= start_of_month) &
+            (HealthMetrics.starttime <= end_of_month)
+        ).order_by(HealthMetrics.starttime.asc())
+
+        heart_rate_data = [{'heart_rate': data.heart_rate, 
+                            'starttime': datetime.strptime(data.starttime, '%Y-%m-%d %H:%M:%S %Z').strftime('%H:%M:%S')
+                            }
+                           for data in heart_rate_data
+                           ]
+        print(heart_rate_data)
+        return jsonify({"response":heart_rate_data}), 200
+    else:
+        return jsonify({"response":"Method not allowed"}), 405
 
 def initialize():
     DATABASE.connect()
