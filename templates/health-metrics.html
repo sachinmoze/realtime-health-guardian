@@ -188,17 +188,6 @@ function fetchHeartRateData() {
   .then(response => response.json())
   .then(data => {
     
-    // var labels = data.map(function(entry) {
-    //   return entry.date;
-    // });
-    // var heartRates = data.map(function(entry) {
-    //   return entry.average;
-    // });
-
-    // Update the chart with the fetched data
-    // heartRateChart.data.labels = labels;
-    // heartRateChart.data.datasets[0].data = heartRates;
-    // heartRateChart.update();
     var dates = data.response.date;
     var averages = data.response.average;
     console.log(dates);
@@ -213,9 +202,6 @@ function fetchHeartRateData() {
 
 // Call fetchHeartRateData function when the month or year selector changes
 $("#monthSelector, #yearSelector").change(fetchHeartRateData);
-
-
-
 
 // Initial fetch of heart rate data when the page loads
 fetchHeartRateData();
