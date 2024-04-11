@@ -9,7 +9,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
 
-from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist,BooleanField,ForeignKeyField,DateTimeField,FloatField
+from peewee import SqliteDatabase, Model, CharField,IntegrityError,IntegerField,DoesNotExist,BooleanField,ForeignKeyField,DateTimeField,FloatField,fn
 from db_models import User,UserGoogleFitCredentials,HealthMetrics,EmergencyContacts,DATABASE
 from flask_mail import Mail, Message
 
@@ -57,8 +57,8 @@ SCOPES = ['https://www.googleapis.com/auth/fitness.activity.read',
               "https://www.googleapis.com/auth/fitness.activity.write", 
               "https://www.googleapis.com/auth/fitness.blood_pressure.write", 
               "https://www.googleapis.com/auth/fitness.heart_rate.read"
-          
           ]
+
 API_SERVICE_NAME = 'fitness'
 API_VERSION = 'v1'
 
@@ -543,6 +543,7 @@ def update_google_fit_credentials(user_id, credentials_data):
             credentials.client_id = credentials_data.get('client_id')
             credentials.client_secret = credentials_data.get('client_secret')
             credentials.scopes = credentials_data.get('scopes')
+            
             # Save the updated credentials
             credentials.save()
             print("Credentials updated successfully.")
@@ -697,6 +698,28 @@ def revoke_google_fit_cred():
     except Exception as e:
         flash(f'Error occurred while revoking Google Fit {e}', 'danger')
         redirect(url_for('dashboard'))
+
+@app.route('/fetch-heart-rate-today', methods=['GET'])
+def fetch_heart_rate_today():
+    user_id = current_user.get_id()
+    print(user_id)
+
+    ##Fetching heart rate data from database
+    #today=datetime.now()-timedelta(days=1)
+    today=datetime.now()
+    print(today.date())
+    heart_rate_data = HealthMetrics.select().where((HealthMetrics.user_id == user_id) &
+                                                   (HealthMetrics.starttime >= datetime.combine(today, datetime.min.time())) &
+    (HealthMetrics.starttime < datetime.combine(today + timedelta(days=1), datetime.min.time()))).order_by(HealthMetrics.starttime.asc())
+
+    ##converting the data to json
+    heart_rate_data = [{'heart_rate': data.heart_rate, 
+                        'starttime': datetime.strptime(data.starttime, '%Y-%m-%d %H:%M:%S %Z').strftime('%H:%M:%S')
+                        } 
+                       for data in heart_rate_data
+                       ]
+    return jsonify({"response":heart_rate_data}), 200
+
 
 
 def initialize():
