@@ -1,3 +1,4 @@
+from collections import defaultdict
 from flask import Flask, render_template, request, redirect, url_for, flash, session,jsonify
 from flask_mysqldb import MySQL
 from flask_cors import CORS
@@ -720,6 +721,19 @@ def fetch_heart_rate_today():
                        ]
     return jsonify({"response":heart_rate_data}), 200
 
+def calculate_average_heart_rate(data):
+    daily_heart_rates = defaultdict(list)
+    for entry in data:
+        starttime = datetime.strptime(entry['starttime'], '%Y-%m-%d %H:%M:%S')
+        date = starttime.day
+        daily_heart_rates[date].append(entry['heart_rate'])
+    average_heart_rates = {"date":[],"average":[]}
+    for date, heart_rates in daily_heart_rates.items():
+        #average_heart_rates[date] = sum(heart_rates) / len(heart_rates)
+        average_heart_rates["date"].append(date)
+        average_heart_rates["average"].append(sum(heart_rates) / len(heart_rates))
+    return average_heart_rates
+
 @app.route('/fetch-heart-rate-average-data', methods=['POST','GET'])
 def fetch_heart_rate_average_data():
     if request.method == 'POST':
@@ -757,8 +771,8 @@ def fetch_heart_rate_average_data():
                     'starttime': data.starttime.strftime('%Y-%m-%d %H:%M:%S')
                 })
 
-        print(heart_rate_data_json)
-        return jsonify({"response":heart_rate_data_json}), 200
+        print(calculate_average_heart_rate(heart_rate_data_json))
+        return jsonify({"response":calculate_average_heart_rate(heart_rate_data_json)}), 200
     else:
         return jsonify({"response":"Method not allowed"}), 405
 
