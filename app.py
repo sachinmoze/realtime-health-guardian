@@ -721,39 +721,35 @@ def fetch_heart_rate_today():
                        ]
     return jsonify({"response":heart_rate_data}), 200
 
-# def calculate_average_heart_rate(data):
-#     daily_heart_rates = defaultdict(list)
-#     for entry in data:
-#         starttime = datetime.strptime(entry['starttime'], '%Y-%m-%d %H:%M:%S')
-#         date = starttime.day
-#         daily_heart_rates[date].append(entry['heart_rate'])
-#     average_heart_rates = {"date":[],"average":[]}
-#     for date, heart_rates in daily_heart_rates.items():
-#         #average_heart_rates[date] = sum(heart_rates) / len(heart_rates)
-#         average_heart_rates["date"].append(date)
-#         average_heart_rates["average"].append(sum(heart_rates) / len(heart_rates))
-#     return average_heart_rates
+def calculate_average_heart_rate(user_id, month:str, year:str):
+    average_heart_rates = {"date":[],"average":[]}
+    try:
+        cursor = DATABASE.cursor()
+        query = "SELECT AVG(heart_rate) AS avg,SUBSTR(starttime, 0, 11) AS newdate,SUBSTR(starttime, 9, 2) AS Day FROM healthmetrics WHERE SUBSTR(starttime, 6, 2) = ? AND SUBSTR(starttime, 1, 4) = ? AND user_id = ? GROUP BY newdate"
+        cursor.execute(query, (month, year,user_id))
+        rows = cursor.fetchall()
+        cursor.close()
+
+        for row in rows:
+            print(row[0],row[1],row[2])
+            average_heart_rates["date"].append(row[2])
+            average_heart_rates["average"].append(row[0])
+        return average_heart_rates  
+  
+    except Exception as e:
+        print("Error occurred while calculating average heart rate",e)
+    return average_heart_rates
+
 
 @app.route('/fetch-heart-rate-average-data', methods=['POST','GET'])
 def fetch_heart_rate_average_data():
     if request.method == 'POST':
         user_id = current_user.get_id()
         data = request.get_json()
-
         month = data.get('month')
         year = data.get('year')
-        selected_month = int(month)
-        selected_year = int(year)
-        cursor = DATABASE.cursor()
-        query = "SELECT AVG(heart_rate) AS avg,SUBSTR(starttime, 0, 11) AS newdate,SUBSTR(starttime, 9, 2) AS Day FROM healthmetrics WHERE SUBSTR(starttime, 6, 2) = ? AND SUBSTR(starttime, 1, 4) = ? AND user_id = ? GROUP BY newdate"
-        cursor.execute(query, (month, year,user_id))
-        rows = cursor.fetchall()
-        cursor.close()
-        average_heart_rates = {"date":[],"average":[]}
-        for row in rows:
-            print(row[0],row[1],row[2])
-            average_heart_rates["date"].append(row[2])
-            average_heart_rates["average"].append(row[0])
+
+        average_heart_rates=calculate_average_heart_rate(user_id, month, year)
         return jsonify({"response":average_heart_rates}),200
     else:
         return jsonify({"response":"Method not allowed"}), 405
@@ -769,9 +765,9 @@ def fetch_heart_rate_for_selected_date():
         print(selected_date)
         # Query to fetch data for the selected month
         heart_rate_data = HealthMetrics.select().where(
-    (HealthMetrics.user_id == user_id) &
-    (HealthMetrics.starttime >= selected_date) &
-    (HealthMetrics.starttime <= selected_date.replace(hour=23, minute=59, second=59))
+                        (HealthMetrics.user_id == user_id) &
+                        (HealthMetrics.starttime >= selected_date) &
+                        (HealthMetrics.starttime <= selected_date.replace(hour=23, minute=59, second=59))
                 ).order_by(HealthMetrics.starttime.asc())
 
         # Convert the data to JSON
