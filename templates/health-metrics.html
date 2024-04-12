@@ -67,6 +67,8 @@
               </select>
             </div>
           </div>
+
+          
           <!-- Heart rate graph plot -->
           <div class="chart-container">
             <canvas id="heartRateChart"></canvas>
@@ -99,20 +101,27 @@
 <script>
 $(document).ready(function() {
 
+    //var average_heart_rate = "{{ average_heart_rates.average }}";
+    var average_heart_rate = {{ average_heart_rates.average | tojson }};
+    var average_heart_rate_dates = {{ average_heart_rates.date | tojson }};
+
+    console.log(average_heart_rate);
+    console.log(average_heart_rate_dates);
     // Heart rate chart
     var heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
     var heartRateChart = new Chart(heartRateCtx, {
       type: 'line',
       data: {
-        labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'],
+        labels: average_heart_rate_dates,
         datasets: [{
           label: 'Average Heart Rate (bpm)',
-          data: [75, 80, 85, 78, 90, 82, 79, 72, 87, 88, 83, 81, 75, 79, 80, 77, 85, 90, 78, 81, 84, 86, 89, 83, 82, 80, 79, 81, 84, 88, 86],
+          data: average_heart_rate,
           borderColor: 'blue',
           backgroundColor: 'rgba(0, 0, 255, 0.1)',
           borderWidth: 1
         }]
       },
+      
       options: {
         scales: {
           x: {

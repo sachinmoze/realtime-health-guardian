@@ -281,7 +281,14 @@ def logout():
 @app.route('/health-metrics')
 @login_required
 def health_metrics():
-    return render_template('health-metrics.html')
+    user_id = current_user.get_id()
+    current_month = datetime.now().month
+    current_year = str(datetime.now().year)
+    current_month = str(current_month).zfill(2)
+
+    average_heart_rates = calculate_average_heart_rate(user_id, current_month, current_year)
+    print(average_heart_rates)
+    return render_template('health-metrics.html', average_heart_rates=average_heart_rates)
 
 @app.route('/emergency-contacts')
 @login_required
