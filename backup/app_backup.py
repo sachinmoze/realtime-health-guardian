@@ -744,16 +744,53 @@ def fetch_heart_rate_average_data():
         year = data.get('year')
         selected_month = int(month)
         selected_year = int(year)
+        print(selected_month,selected_year)
         cursor = DATABASE.cursor()
+        print("Running query")
         query = "SELECT AVG(heart_rate) AS avg,SUBSTR(starttime, 0, 11) AS newdate,SUBSTR(starttime, 9, 2) AS Day FROM healthmetrics WHERE SUBSTR(starttime, 6, 2) = ? AND SUBSTR(starttime, 1, 4) = ? AND user_id = ? GROUP BY newdate"
         cursor.execute(query, (month, year,user_id))
+        print("Query executed")
         rows = cursor.fetchall()
-        cursor.close()
+        columns = [col[0] for col in cursor.description]
+        print(columns)
+        print(rows)
+        dates = [row[0] for row in rows]
+        print("dates",dates)
         average_heart_rates = {"date":[],"average":[]}
         for row in rows:
             print(row[0],row[1],row[2])
             average_heart_rates["date"].append(row[2])
             average_heart_rates["average"].append(row[0])
+        cursor.close()
+    #     start_of_month = datetime(selected_year, selected_month, 1,0, 0, 0)
+    #     print("Start of month",start_of_month)
+
+    #     end_of_month = start_of_month.replace(day=1, month=start_of_month.month+1) - timedelta(days=1)
+    #     print("End of month",end_of_month)
+    #     # Query to fetch data for the selected month
+    #     heart_rate_data = HealthMetrics.select().where(
+    # (HealthMetrics.user_id == user_id) &
+    # (HealthMetrics.starttime >= start_of_month) &
+    # (HealthMetrics.starttime <= end_of_month)
+    #             ).order_by(HealthMetrics.starttime.asc())
+
+    #     # Convert the data to JSON
+    #     heart_rate_data_json = [] 
+    #     for data in heart_rate_data:
+    #         try:
+    #             heart_rate_data_json.append({
+    #                 'heart_rate': data.heart_rate,
+    #                 'starttime': datetime.strptime(data.starttime, '%Y-%m-%d %H:%M:%S %Z').strftime('%Y-%m-%d %H:%M:%S')
+    #             })
+    #         except TypeError as e:
+    #             heart_rate_data_json.append({
+    #                 'heart_rate': data.heart_rate,
+    #                 'starttime': data.starttime.strftime('%Y-%m-%d %H:%M:%S')
+    #             })
+
+        # print(calculate_average_heart_rate(heart_rate_data_json))
+        # return jsonify({"response":calculate_average_heart_rate(heart_rate_data_json)}), 200
+        print(average_heart_rates)
         return jsonify({"response":average_heart_rates}),200
     else:
         return jsonify({"response":"Method not allowed"}), 405
@@ -792,10 +829,6 @@ def fetch_heart_rate_for_selected_date():
         return jsonify({"response":heart_rate_data_json}), 200
     else:
         return jsonify({"response":"Method not allowed"}), 405
-
-@app.route('/monitor-heart-rate', methods=['GET'])
-def monitor_heart_rate():
-    return render_template('monitor-heart-rate.html')
 
 def initialize():
     DATABASE.connect()
