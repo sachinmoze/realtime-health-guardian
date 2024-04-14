@@ -33,7 +33,7 @@ For any inquiries or support requests, please contact at [sachinmoze@gmail.com](
 
 ## License
 
-This project is licensed under the [Insert License Name] License. See the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the [sachinmoze] License. See the [LICENSE.md](LICENSE.md) file for details.
 
 ## Version History
 
