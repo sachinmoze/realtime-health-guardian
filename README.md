@@ -24,6 +24,9 @@ Realtime Healthcare Guardian is a sophisticated application designed for persona
 5. Sign up to realtime health guardian
 6. Authenticate to your google fit account
 
+### Follow Onboarding processs as below
+[https://realtime-health-guardian.onrender.com/onboarding]
+
 ## Usage
 
 1. **Sign Up**: Create an account using your email address and set up your profile.
