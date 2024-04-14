@@ -3,6 +3,7 @@
 Realtime Healthcare Guardian is a sophisticated application designed for personalized heart rate monitoring and emergency alerting. It leverages wearable technology and cloud-based infrastructure to provide real-time insights into individuals' heart rates and send immediate alerts to designated family members in case of detected abnormalities.
 
 ## Features
+
 - Real-time heart rate monitoring using compatible wearable devices.
 - Family member management for designated emergency contacts.
 - Historical data analysis for long-term health trends.
@@ -25,6 +26,7 @@ Realtime Healthcare Guardian is a sophisticated application designed for persona
 4. **Monitor Health**: View real-time heart rate data and monitor health trends.
 5. **Receive Alerts**: Receive immediate alerts in case of detected abnormalities in heart rate patterns.
 6. **Review Historical Data**: Analyze historical heart rate data to track long-term health trends.
+
 
 ## Google Collab Heart Rate Analysis 
 [https://colab.research.google.com/drive/1cjEIbAJDo04KRP-jyzF_kpv1nOBlb5Yf?usp=sharing]
