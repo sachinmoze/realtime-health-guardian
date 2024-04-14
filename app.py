@@ -298,12 +298,12 @@ def emergency_contacts():
     emergency_contacts = [{'name': contact.contact_name, 'phone': contact.contact_number, 'email': contact.contact_email,'id':contact.id,'user_id':contact.user_id} for contact in emergency_contacts]  
     return render_template('emergency-form.html',emergency_contacts=emergency_contacts)
 
-@app.route('/dashboard')
 @login_required
+@app.route('/dashboard')
 def dashboard():
+    if not current_user.is_authenticated:
+        return redirect(url_for('home'))
     user_id = current_user.get_id()
-    print(user_id)
-
     return render_template('dashboard.html')
 
 @app.route('/mail-test')
