@@ -2,6 +2,9 @@
 
 Realtime Healthcare Guardian is a sophisticated application designed for personalized heart rate monitoring and emergency alerting. It leverages wearable technology and cloud-based infrastructure to provide real-time insights into individuals' heart rates and send immediate alerts to designated family members in case of detected abnormalities.
 
+![Screenshot 1](static/home-snip.png)
+![Screenshot 2](static/metrics.png)
+
 ## Project URL
 [https://realtime-health-guardian.onrender.com]
 
