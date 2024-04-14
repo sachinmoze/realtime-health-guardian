@@ -5,6 +5,7 @@
 {% block content %}
 
   <div class="container mt-5">
+    {% if not current_user.is_authenticated %}
     <div class="jumbotron">
       <h1 class="display-4">Welcome to Real Time Healthcare Guardian</h1>
       <p class="lead">Your health and fitness tracking companion.</p>
@@ -16,6 +17,19 @@
         <a class="btn btn-primary btn-lg" href="{{ url_for('onboarding') }}" role="button">Get onboard</a>
       </p>
     </div>
+    {% else %}
+    <div class="jumbotron">
+      <h1 class="display-4">Hi {{current_user.firstname|title}}</h1>
+      <p class="lead">Welcome back to Realtime Healthcare Guardian!</p>
+      <hr class="my-4">
+      <p>
+        Whether you're tracking your heart rate or receiving emergency alerts, our platform is designed to keep you informed and empowered.
+      </p>
+      <p class="lead">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('onboarding') }}" role="button">Get onboard</a>
+      </p>
+    </div>    
+    {% endif %}
   </div>
 
  
