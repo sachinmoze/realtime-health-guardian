@@ -1,21 +1,22 @@
 # Realtime Healthcare Guardian
 
-Realtime Healthcare Guardian is a sophisticated application designed for personalized health monitoring and emergency alerting. It leverages wearable technology and cloud-based infrastructure to provide real-time insights into individuals' heart rates and send immediate alerts to designated family members in case of detected abnormalities.
+Realtime Healthcare Guardian is a sophisticated application designed for personalized heart rate monitoring and emergency alerting. It leverages wearable technology and cloud-based infrastructure to provide real-time insights into individuals' heart rates and send immediate alerts to designated family members in case of detected abnormalities.
 
 ## Features
 
 - Real-time heart rate monitoring using compatible wearable devices.
-- Automatic emergency alerting with location information.
 - Family member management for designated emergency contacts.
 - Historical data analysis for long-term health trends.
 - Recommendations for medical consultation based on detected abnormalities.
 
 ## Installation
 
-1. Download the Realtime Healthcare Guardian application from the [App Store](#) or [Google Play Store](#).
+1. Download the Google fit application in your mobile.
 2. Install the application on your mobile device.
 3. Follow the on-screen instructions to set up your account and authenticate with Google Fit.
 4. Connect your compatible wearable device to the application for heart rate monitoring.
+5. Sign up to realtime health guardian
+6. Authenticate to your google fit account
 
 ## Usage
 
@@ -28,11 +29,7 @@ Realtime Healthcare Guardian is a sophisticated application designed for persona
 
 ## Support
 
-For any inquiries or support requests, please contact our customer support team at [support@realtimehealthcareguardian.com](mailto:support@realtimehealthcareguardian.com).
-
-## Contributing
-
-We welcome contributions from the community. If you would like to contribute to Realtime Healthcare Guardian, please fork the repository and submit a pull request with your changes.
+For any inquiries or support requests, please contact at [sachinmoze@gmail.com](mailto:sachinmoze@gmail.com).
 
 ## License
 
@@ -40,15 +37,8 @@ This project is licensed under the [Insert License Name] License. See the [LICEN
 
 ## Version History
 
-- **Version 1.0.0** (Release Date: [Insert Date]):
+- **Version 1.0.0** (Release Date: 04/15/2024):
   - Initial release of the Realtime Healthcare Guardian application.
-  - Basic features include real-time heart rate monitoring and emergency alerting.
-
-## Acknowledgements
-
-We would like to thank the following individuals and organizations for their contributions and support:
-- [Insert Name/Organization]
-- [Insert Name/Organization]
-
+  - Basic features include real-time heart rate monitoring.
 ---
 Thank you for choosing Realtime Healthcare Guardian! We hope this application supports you in your journey towards better health.
