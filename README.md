@@ -27,13 +27,17 @@ Realtime Healthcare Guardian is a sophisticated application designed for persona
 5. **Receive Alerts**: Receive immediate alerts in case of detected abnormalities in heart rate patterns.
 6. **Review Historical Data**: Analyze historical heart rate data to track long-term health trends.
 
+
+## Google Collab Heart Rate Analysis 
+[https://colab.research.google.com/drive/1cjEIbAJDo04KRP-jyzF_kpv1nOBlb5Yf?usp=sharing]
+
 ## Support
 
 For any inquiries or support requests, please contact at [sachinmoze@gmail.com](mailto:sachinmoze@gmail.com).
 
 ## License
 
-This project is licensed under the [Insert License Name] License. See the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the [sachinmoze] License. See the [LICENSE.md](LICENSE.md) file for details.
 
 ## Version History
 
