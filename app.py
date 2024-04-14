@@ -713,7 +713,7 @@ def fetch_heart_rate_today():
     print(user_id)
 
     ##Fetching heart rate data from database
-    today=datetime.now()-timedelta(days=1)
+    today=datetime.now()
     #today=datetime.now()
     print(today.date())
     heart_rate_data = HealthMetrics.select().where((HealthMetrics.user_id == user_id) &
