@@ -65,10 +65,6 @@ API_VERSION = 'v1'
 
 login_manager = LoginManager()
 
-
-
-
-
 app = Flask(__name__)
 
 login_manager.init_app(app)
