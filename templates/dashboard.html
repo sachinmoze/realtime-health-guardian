@@ -25,7 +25,7 @@
       <div class="col-md-12">
         <div class="dashboard-container">
 
-          <h2 class="dashboard-header">Hi {{ current_user.firstname }}, Welcome back to Healthcare Guardian Dashboard</h2>
+          <h2 class="dashboard-header">Hi {{ current_user.firstname|title }}, Welcome back to Healthcare Guardian Dashboard</h2>
           <!-- Check if the user has authenticated with Google Fit -->
           
           {% if not current_user.authenticated_google_fit %}
