@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | Healthcare Guardian{% endblock %}
+
+  {% block styles %}
+  <style>
+    .dashboard-container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      margin-top: 100px;
+    }
+    .dashboard-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .card {
+      margin-bottom: 20px;
+    }
+  </style>
+  {% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="dashboard-container">
+
+          <h2 class="dashboard-header">Hi {{ current_user.firstname|title }}, Welcome back to Healthcare Guardian Dashboard</h2>
+          <!-- Check if the user has authenticated with Google Fit -->
+          
+          {% if not current_user.authenticated_google_fit %}
+          <!-- If user has not authenticated, show alert message -->
+          <div class="alert alert-warning" role="alert">
+            You need to authenticate to your Google Fit account to access the full dashboard features.
+            <a href="{{ url_for('authorize_google_fit') }}" class="alert-link">Authenticate now</a>.
+            <p>Your privacy and security are important to us. When you sign up for Realtime Healthcare Guardian, rest assured that your data is protected.</p>
+          </div>
+          <p></p>
+          {% endif %}
+          <!-- Regular dashboard content -->
+
+          {% if current_user.authenticated_google_fit %}
+          <p><a href="{{ url_for('revoke_google_fit_cred') }}">Revoke Google fit access</a></p>
+          <p><a href="{{ url_for('store_heartrate_data') }}">Sync All Data</a></p>
+          <p><a href="{{ url_for('store_heartrate_data_today') }}">Sync today's Data</a></p>
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Health Stats</h5>
+              <p class="card-text">View your health statistics here.</p>
+              <!-- Add an ID to the link for event handling -->
+              <a href="{{ url_for('health_metrics') }}" id="healthStatsLink" class="btn btn-primary">View Stats</a>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Heart Rate Monitoring</h5>
+              <p class="card-text">Monitor your heart rate in real-time.</p>
+              <!-- Add an ID to the link for event handling -->
+              <a href="{{ url_for('monitor_heart_rate') }}" id="heartRateMonitoringLink" class="btn btn-primary">Monitor Heart Rate</a>
+            </div>
+          </div>
+          {% endif %}
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Emergency Contacts</h5>
+              <p class="card-text">Manage your emergency contacts.</p>
+              <a href="{{ url_for('emergency_contacts') }}" class="btn btn-primary">Manage Contacts</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Event listener for Health Stats link
+    document.getElementById('healthStatsLink').addEventListener('click', function(event) {
+      // If Google Fit is not authenticated, show alert
+      if (!$userAuthenticated) {
+        event.preventDefault(); // Prevent default link behavior
+        alert('Please authenticate to your Google Fit account to access Health Stats.');
+      }
+    });
+
+    // Event listener for Heart Rate Monitoring link
+    document.getElementById('heartRateMonitoringLink').addEventListener('click', function(event) {
+      // If Google Fit is not authenticated, show alert
+      if (!$userAuthenticated) {
+        event.preventDefault(); // Prevent default link behavior
+        alert('Please authenticate to your Google Fit account to access Heart Rate Monitoring.');
+      }
+    });
+  </script>
+
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Real Time Healthcare Guardian{% endblock %}
+
+{% block content %}
+
+  <div class="container mt-5">
+    {% if not current_user.is_authenticated %}
+    <div class="jumbotron">
+      <h1 class="display-4">Welcome to Real Time Healthcare Guardian</h1>
+      <p class="lead">Your health and fitness tracking companion.</p>
+      <hr class="my-4">
+      <p>
+        Welcome to Realtime Healthcare Guardian! Sign up now to access personalized health tracking features and start monitoring your heart rate daily. With our intuitive platform, you can stay informed about your health status and receive emergency alerts to keep your loved ones informed
+      </p>
+      <p class="lead">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('onboarding') }}" role="button">Get onboard</a>
+      </p>
+    </div>
+    {% else %}
+    <div class="jumbotron">
+      <h1 class="display-4">Hi {{current_user.firstname|title}}</h1>
+      <p class="lead">Welcome back to Realtime Healthcare Guardian!</p>
+
+      {% if not current_user.authenticated_google_fit %}
+      <!-- If user has not authenticated, show alert message -->
+      <div class="alert alert-warning" role="alert">
+        You have not authenticate to your Google Fit account to get tracking your health.
+        <a href="{{ url_for('authorize_google_fit') }}" class="alert-link">Authenticate now</a>.
+      </div>
+      <p></p>
+      {% endif %}
+
+      <hr class="my-4">
+      <p>
+        Whether you're tracking your heart rate or receiving emergency alerts, our platform is designed to keep you informed and empowered.
+      </p>
+      <p class="lead">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('dashboard') }}" role="button">Go to Dashboard</a>
+      </p>
+      <div class="step-image">
+        <img src="static/normal-heart-rate-bg-removed.png" class="img-fluid" alt="Healthcare Guardian Login">
+      </div>
+    </div>    
+    {% endif %}
+  </div>
+
+  {% if not current_user.is_authenticated %}
+  <section id="signup" class="py-5 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+          <div class="step-image">
+            <img src="static/heart-bg-removed.png" class="img-fluid" alt="Healthcare Guardian Login">
+          </div>
+          <h2>Signup to Setup Your Account</h2>
+
+          
+          <p class="lead">Sign up today to take control of your well-being and gain access to features designed to enhance your health journey. From real-time heart rate tracking to historical data analysis, our platform empowers you to make informed decisions about your health.</p>
+          <a class="btn btn-primary btn-lg" href="{{ url_for('onboarding') }}" role="button">Get onboard</a>
+          <p class="lead">Already onboarded? Signup to setup your account.</p>
+          <a class="btn btn-primary btn-lg" href="{{ url_for('signup') }}" role="button">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </section>
+ 
+  <section id="login" class="py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+          <h2>Login to Healthcare Dashboard</h2>
+          <p class="lead">Join us today and experience the peace of mind that comes with knowing your health is in good hands.</p>
+          <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}" role="button">Login</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  {% endif %}
+
+{% endblock %}

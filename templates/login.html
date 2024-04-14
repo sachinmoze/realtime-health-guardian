@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Login | Healthcare Guardian{% endblock %}
+
+  {% block styles %}
+  <style>
+    .login-container {
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-top: 100px;
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+  </style>
+  {% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="login-container">
+          <h2 class="login-header">Login to Healthcare Guardian</h2>
+          <form method="post" action="{{ url_for('login') }}">
+            <div class="form-group">
+              <label for="email">Email address</label>
+              <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp" placeholder="Enter email" required>
+              <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" class="form-control" name="password" id="password" placeholder="Password" required>
+            </div>
+            <div class="form-group form-check">
+              <input type="checkbox" class="form-check-input" id="rememberMe">
+              <label class="form-check-label" for="rememberMe">Remember me</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+          </form>
+          <div class="text-center mt-3">
+            <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
+            <p><a href="{{ url_for('forgotpassword') }}">Forgot password?</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

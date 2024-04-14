@@ -1,0 +1,80 @@
+  {% extends 'base.html' %}
+
+  {% block title %}Signup | Healthcare Guardian{% endblock %}
+  
+  {% block content %}
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h2 class="text-center mb-4">Signup to Health Guardian</h2>
+        <form method="POST" action="{{ url_for('signup') }}">
+          <div class="form-group">
+            {{ form.csrf_token }}
+            <div class="form-group">
+
+                {{ form.firstName.label }}
+                {{ form.firstName(class="form-control", placeholder="Enter your first name") }}
+
+                {% if form.firstName.errors %}
+                <div class="invalid-feedback" style="display: block;">{{ form.firstName.errors[0] }}</div>
+                {% endif %}
+
+                {{ form.lastName.label }}
+                {{ form.lastName(class="form-control", placeholder="Enter your last name") }}
+
+                {% if form.lastName.errors %}
+                <div class="invalid-feedback" style="display: block;">{{ form.lastName.errors[0] }}</div>
+                {% endif %}
+
+                {{ form.email.label }}
+                {{ form.email(class="form-control", placeholder="Enter your Email id") }}
+                
+                {% if form.email.errors %}
+                <div class="content">
+                  {% for error in form.email.errors %}
+                    <div class="alert">{{ error }}</div>
+                  {% endfor %}
+                </div>
+                {% endif %}                
+
+                {{ form.mobile.label }}
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                      <span class="input-group-text">+{{ form.countryCode(class="form-control", placeholder="", style="width: 50px") }}</span>
+                  </div>
+                  {{ form.mobile(class="form-control", placeholder="Enter your mobile number") }}
+                </div>
+
+                {% if form.countryCode.errors %}
+                  <div class="invalid-feedback" style="display: block;">{{ form.countryCode.errors[0] }}</div>
+                {% endif %}
+
+                {% if form.mobile.errors %}
+                  <div class="invalid-feedback" style="display: block;">{{ form.mobile.errors[0] }}</div>
+                {% endif %}
+
+                {{ form.password.label }}
+                {{ form.password(class="form-control", placeholder="Enter password") }}
+                {% if form.password.errors %}
+                <div class="invalid-feedback" style="display: block;">{{ form.password.errors[0] }}</div>
+                {% endif %}
+
+                {{ form.confirmPassword.label }}
+                {{ form.confirmPassword(class="form-control", placeholder="Confirm password") }}
+                {% if form.confirmPassword.errors %}
+                <div class="invalid-feedback" style="display: block;">{{ form.confirmPassword.errors[0] }}</div>
+                {% endif %}
+
+
+
+            </div>
+          <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+        </form>
+        <p class="text-center mt-3">Or</p>
+        <button class="btn btn-danger btn-block">Sign Up with Google</button>
+      </div>
+    </div>
+  </div>
+
+  {% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% block title %}Health Metrics | Healthcare Guardian{% endblock %}
+
+{% block styles %}
+  <style>
+    /* Add custom styles here */
+    .health-metrics-container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      margin-top: 100px;
+    }
+    .health-metrics-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .chart-container {
+      margin-bottom: 20px;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="health-metrics-container">
+          <h2 class="health-metrics-header">Heart Rate Monitoring</h2>
+
+          <!-- Heart rate data display -->
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Today's Heart Rate Readings</h5>
+              <p class="card-text">
+                <!-- Display multiple heart rate readings within a day -->
+                <ul id="heartRateReadingsToday">
+                  <!-- Heart rate readings will be dynamically updated here -->
+                </ul>
+              </p>
+            </div>
+          </div>
+
+          <br>
+
+          <!-- Heart rate data display for previous dates -->
+          <div class="row">
+            <div class="col-md-6">
+              <h5 class="card-title">Heart Rate Readings for Previous Dates</h5>
+              <div class="form-group">
+                <label for="dateSelector">Select Date:</label>
+                <input type="date" id="dateSelector" class="form-control">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <ul id="heartRateReadings" class="list-group">
+                <!-- Sample heart rate readings -->
+                <li class="list-group-item">8:00 AM - 75 bpm</li>
+                <li class="list-group-item">10:00 AM - 80 bpm</li>
+                <li class="list-group-item">12:00 PM - 85 bpm</li>
+                <li class="list-group-item">2:00 PM - 82 bpm</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+$(document).ready(function() {
+
+
+  // Function to fetch and update heart rate readings
+  function updateHeartRateReadings() {
+    var heartRateTodayList = $('#heartRateReadingsToday');
+
+    // Fetch heart rate data from the server
+    fetch("{{ url_for('fetch_heart_rate_today') }}",{ method: 'GET' }).then((data) => data.json()).then((data) => {
+
+        heartRateTodayList.empty();
+
+        // Iterate over the fetched heart rate data and add it to the UI
+        data.response.forEach(function(reading) {
+          var readingItem = $('<li>').text(reading.starttime + ' - ' + reading.heart_rate + ' bpm');
+          heartRateTodayList.append(readingItem);
+        });
+    })
+      //error: 
+      .catch((error)=> 
+        console.error('Error fetching heart rate data:', error));
+      
+  };
+
+  // Call the function to update heart rate readings initially
+  updateHeartRateReadings();
+
+  // Update heart rate readings every 30 seconds
+  setInterval(updateHeartRateReadings, 30000);
+
+// Function to fetch heart rate data based on selected month and year
+function fetchHeartRateData() {
+  var month = $("#monthSelector").val();
+  var year = $("#yearSelector").val();
+
+  // Make a POST request to fetch heart rate data for the selected month and year
+  fetch("{{ url_for('fetch_heart_rate_average_data') }}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ month: month, year: year })
+  })
+  .then(response => response.json())
+  .then(data => {
+    
+    var dates = data.response.date;
+    var averages = data.response.average;
+    console.log(dates);
+    console.log(averages);
+    // Update the chart with the fetched data
+    heartRateChart.data.labels = dates;
+    heartRateChart.data.datasets[0].data = averages;
+    heartRateChart.update();
+  })
+  .catch(error => console.error('Error fetching heart rate data:', error));
+}
+
+// Call fetchHeartRateData function when the month or year selector changes
+$("#monthSelector, #yearSelector").change(fetchHeartRateData);
+
+// Initial fetch of heart rate data when the page loads
+fetchHeartRateData();
+
+// Function to fetch and update heart rate readings for the selected date
+function updateHeartRateReadingsForSelectedDate(selectedDate) {
+  var heartRateReadingsList = $('#heartRateReadings');
+
+  // Make a POST request to fetch heart rate data for the selected date
+  fetch("{{ url_for('fetch_heart_rate_for_selected_date') }}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ date: selectedDate })
+  })
+  .then(response => response.json())
+  .then(data => {
+    heartRateReadingsList.empty();
+
+    // Iterate over the fetched heart rate data and add it to the UI
+    data.response.forEach(function(reading) {
+      var formattedTime = new Date(reading.starttime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      var readingItem = $('<li>').text(formattedTime + ' - ' + reading.heart_rate + ' bpm');
+      heartRateReadingsList.append(readingItem);
+    });
+  })
+  .catch(error => console.error('Error fetching heart rate data:', error));
+}
+
+// Event listener for the date selector
+$('#dateSelector').on('change', function() {
+  // Get the selected date
+  var selectedDate = $(this).val();
+
+  // Update heart rate readings for the selected date
+  updateHeartRateReadingsForSelectedDate(selectedDate);
+});
+
+
+});
+</script>
+{% endblock %}

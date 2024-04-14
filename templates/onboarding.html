@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Healthcare Guardian Onboarding{% endblock %}
+
+
+{% block styles %}
+  <style>
+    
+    .step-container {
+      display: none; 
+    }
+    .active-step {
+      display: block; 
+    }
+    .step-header {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .step-instruction {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .step-image {
+      margin-bottom: 20px;
+    }
+    .btn-previous, .btn-next {
+      margin-top: 20px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <h2 class="text-center mb-4">Healthcare Guardian Onboarding</h2>
+        
+        <div id="step-1" class="step-container active-step">
+          <div class="step-header">Welcome to Healthcare Guardian!</div>
+          <div class="step-instruction">Follow the steps to start tracking your health data:</div>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-2" class="step-container">
+          <div class="step-header">Step 1: Download Google Fit</div>
+          <div class="step-instruction">Download and install the Google Fit app from the App Store or Google Play Store.</div>
+          <p><span>
+            <a href="https://apps.apple.com/us/app/google-fit/id1433864494" target="_blank">iOS</a>
+          </span></p>
+          <p><span>
+            <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.fitness" target="_blank">Android</a>
+          </span></p>
+          <div class="step-image">
+            <img src="static/fit.jpg" class="img-fluid" alt="Google Fit App">
+          </div>
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-3" class="step-container">
+          <div class="step-header">Step 2: Sign Up\login to Google Fit</div>
+          <div class="step-instruction">Open the Google Fit app and sign up or log in with your Google account.</div>
+          <!-- <div class="step-image">
+            <img src="https://via.placeholder.com/400" class="img-fluid" alt="Google Fit Signup/Login">
+          </div> -->
+          <p><span>
+            <a href="https://support.google.com/fit?source=404&sjid=9012293484914293609-EU#topic=6075053" target="_blank">Google Fit Help</a>
+          </span></p>
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-4" class="step-container">
+          <div class="step-header">Step 3: Allow Permissions for Google Fit</div>
+          <div class="step-instruction">Grant necessary permissions within the Google Fit app to sync your health data.</div>
+          <!-- <div class="step-image">
+            <img src="https://via.placeholder.com/400" class="img-fluid" alt="Google Fit Permissions">
+          </div> -->
+          <ol>
+            <li>On your Android phone, open the Settings app.</li>
+            <li>Tap Apps & notifications and then Google Fit Google Fit.</li>
+            <li>Tap Permissions and then Physical activity and then  Allow.</li>
+            <li>Open Google Fit Google Fit.</li>
+            <li>At the bottom, tap Profile.</li>
+            <li>At the top, tap Settings Settings.</li>
+            <li>Under “Tracking preferences,” turn Track your activities on or off.</li>
+          </ol>
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-5" class="step-container">
+          <div class="step-header">Step 4: Connect Fit App with Existing Smart watch App to sync your watch data</div>
+          <div class="step-instruction">Follo below steps if you are using ios and your watch connected to Apple Health.</div>
+          <ol>
+            <li>On your iPhone, open the <strong>Google Fit app</strong>.</li>
+            <li>At the bottom, tap <strong>Profile</strong>.</li>
+            <li>At the top, tap <strong>Settings</strong>.</li>
+            <li>Under "Activity Tracking," tap <strong>Track your activities with Health</strong>.</li>
+            <li>Turn on <strong>Let Google Fit access Health</strong>.</li>
+            <li>If necessary, follow the instructions to sync Fit with Health.</li>
+        </ol>
+        <div class="step-instruction">Follow the below steps if using Non iOS or Android.</div>
+        <ol>
+          <li>On your phone, open the <strong>Google Fit app</strong>.</li>
+          <li>At the bottom, tap <strong>Profile</strong>.</li>
+          <li>At the top, tap <strong>Settings</strong>.</li>
+          <li>Under "Activity Tracking," tap <strong>Track your activities with <b>Your existing Health App</b></strong>.</li>
+          <li>Turn on <strong>Let Google Fit access Health</strong>.</li>
+          <li>If necessary, follow the instructions to sync Fit with existing App.</li>
+      </ol>
+      <div class="step-instruction">If not able to connect your App with Google fit, Follow below Google reference.</div>
+        <p><span>
+          <a href="https://support.google.com/fit/answer/6098255?hl=en&ref_topic=6075053&sjid=9012293484914293609-EU" target="_blank">Connect other apps with Google Fit</a>
+        </span></p>
+
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="nextStep()">Next</button>
+        </div>
+        
+        <div id="step-6" class="step-container">
+          <div class="step-header">Step 5: Login to Healthcare Guardian</div>
+          <div class="step-instruction">Sign up\Login to Healthcare Guardian and provide access to your Google fit account and grant permissions to access your health data.</div>
+          <!-- <div class="step-image">
+            <img src="https://via.placeholder.com/400" class="img-fluid" alt="Healthcare Guardian Login">
+          </div> -->
+          <button class="btn btn-secondary btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary btn-next" onclick="location.href='./signup';">Next</button>
+        </div>
+        
+        <div id="step-7" class="step-container">
+          <div class="step-header">Congratulations!</div>
+          <div class="step-instruction">You have successfully completed the onboarding process.</div>
+          <button class="btn btn-success btn-previous" onclick="previousStep()">Previous</button>
+          <button class="btn btn-primary" onclick="completeOnboarding()">Start Exploring</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <script>
+    var currentStep = 1;
+    function nextStep() {
+      document.getElementById('step-' + currentStep).classList.remove('active-step');
+      currentStep++;
+      if (currentStep <= 7) {
+        document.getElementById('step-' + currentStep).classList.add('active-step');
+      } else {
+        completeOnboarding();
+      }
+    }
+    function previousStep() {
+      document.getElementById('step-' + currentStep).classList.remove('active-step');
+      currentStep--;
+      document.getElementById('step-' + currentStep).classList.add('active-step');
+    }
+    function completeOnboarding() {
+      alert('Congratulations! You have successfully completed the onboarding process.');
+      
+    }
+  </script>
+{% endblock %}

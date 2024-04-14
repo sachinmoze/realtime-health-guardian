@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Emergency Contacts | Healthcare Guardian{% endblock %}
+ 
+{% block styles %}
+  <style>
+    
+    .emergency-contacts-container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      margin-top: 100px;
+    }
+    .emergency-contacts-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .contact-list {
+      margin-bottom: 20px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="emergency-contacts-container">
+          <h2 class="emergency-contacts-header">Emergency Contacts</h2>
+          <!-- Add emergency contact form -->
+
+          <form id="emergencyContactForm">
+            <div class="form-group">
+              <label for="name">Name:</label>
+              <input type="text" class="form-control" id="name" name="name" placeholder="Enter name" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone:</label>
+              <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter phone number" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Contact</button>
+          </form>
+
+          <!-- Display added emergency contacts -->
+          <div class="contact-list">
+            <h3>Emergency Contacts List:</h3>
+            <ul id="emergencyContactsList">
+              {% for contact in emergency_contacts %}
+              <li>{{ contact.name }} - Email: {{ contact.email }}, Phone: {{ contact.phone }}
+
+                <button class="delete-contact" data-id="{{ contact.id }}">x</button>
+              </li>
+              {% endfor %}
+              
+              <!-- Emergency contacts will be dynamically added here -->
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+// Function to handle form submission
+document.getElementById('emergencyContactForm').addEventListener('submit', function(event) {
+  event.preventDefault(); // Prevent form submission
+  
+  // Get form values
+  var name = document.getElementById('name').value;
+  var email = document.getElementById('email').value;
+  var phone = document.getElementById('phone').value;
+  
+  // Validate form fields (you can add your validation logic here)
+
+  // Add the contact to the list
+  addEmergencyContact(name, email, phone);
+
+  // Reset form fields
+  document.getElementById('name').value = '';
+  document.getElementById('email').value = '';
+  document.getElementById('phone').value = '';
+});
+
+// Function to delete emergency contact
+document.querySelectorAll('.delete-contact').forEach(button => {
+  button.addEventListener('click', function() {
+    var contactId = button.getAttribute('data-id');
+    var contactItem = button.closest('li');
+
+    var contactText = contactItem.textContent;
+    // Extracting contact, email, and phone from the contactText
+    var name = contactText.split(' - ')[0];
+    var email = contactText.split('Email: ')[1].split(', Phone: ')[0];
+    var phone = contactText.split('Phone: ')[1];
+
+    contactItem.remove();
+    deleteEmergencyContact(contactId, name, email, phone);
+  });
+});
+
+// Function to add emergency contact to the list
+function addEmergencyContact(name, email, phone) {
+  var contactsList = document.getElementById('emergencyContactsList');
+  var contactItem = document.createElement('li');
+  contactItem.textContent = name + ' - Email: ' + email + ', Phone: ' + phone;
+
+  // Create delete button
+  var deleteButton = document.createElement('button');
+  deleteButton.textContent = 'x';
+  deleteButton.setAttribute('class', 'delete-contact');
+  deleteButton.setAttribute('data-id', null);  // Set data-id attribute to contact name for simplicity
+  deleteButton.addEventListener('click', function() {
+    // Remove contact from UI
+    contactsList.removeChild(contactItem);
+    
+    // Remove contact from database
+    var contactId = deleteButton.getAttribute('data-id');
+    deleteEmergencyContact(contactId, name, email, phone);
+  });
+  
+  // Append delete button to contact item
+  contactItem.appendChild(deleteButton);
+  
+  // Append contact item to list
+  contactsList.appendChild(contactItem);
+
+  // Send the contact details to the server
+  fetch("{{url_for('add_emergency_contact')}}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      phone: phone
+    })
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+}
+
+// Function to delete emergency contact from the server
+function deleteEmergencyContact(contactId, name, email, phone) {
+  fetch("{{url_for('delete_emergency_contact')}}", {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      id: contactId,
+      name: name,
+      email: email,
+      phone: phone,
+      user_id: "{{ current_user.id }}"
+    })
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+}
+
+
+  </script>
+{% endblock %}
