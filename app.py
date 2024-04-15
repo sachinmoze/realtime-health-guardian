@@ -437,7 +437,8 @@ def millis_to_datetime(millis):
 def store_heartrate_data():
     user_id = current_user.get_id()
     params = {"user_id": user_id,"data_type":"all"}
-    response = requests.get('http://localhost:8080/api/fetch-heart-rate',params=params)  # Update the URL with your actual server URL
+    fetch_api = request.url_root + '/api/fetch-heart-rate'
+    response = requests.get(fetch_api,params=params)  # Update the URL with your actual server URL
 
     #return response.json()['response']
     if response.status_code == 200:
@@ -484,8 +485,9 @@ def store_heartrate_data_today():
     user_id = current_user.get_id()
     starttime = datetime.now() - timedelta(days=1) 
     endtime = datetime.now()
+    fetch_api = request.url_root + '/api/fetch-heart-rate'
     params = {"user_id": user_id,"starttime":starttime,"endtime":endtime,"data_type":"today"}
-    response = requests.get('http://localhost:8080/api/fetch-heart-rate',params=params)  # Update the URL with your actual server URL
+    response = requests.get(fetch_api,params=params)  # Update the URL with your actual server URL
 
     if response.status_code == 200:
         health_metrics = response.json()['response']
